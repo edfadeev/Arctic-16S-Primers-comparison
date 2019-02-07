@@ -2,8 +2,8 @@
 ###Author: Eddie Fadeev
 
 # set variables, program and script locations
-FILELOCATION="/scratch2/efadeev/Primers_comp/SWARM_V4V5/with_ice/"
-NSAMPLE="50"
+FILELOCATION="/scratch2/efadeev/Primers_comp/SWARM_V4V5/FINAL_010219/"
+NSAMPLE="30"
 
 # set variables, program and script locations
 
@@ -24,7 +24,7 @@ SINA_qsub="/scratch2/efadeev/aphros/TaxClassification/sina_aphros.sh" #this scri
 CHECK_LCA="/scratch2/efadeev/aphros/ampliconNGS/find_missing_lca.py"
 
 #modules
-module load anaconda2 pear fastqc java bbmap swarm asplit R sina
+module load anaconda2 pear fastqc java bbmap swarm asplit R sina vsearch/1.9.7
 
 
 ###step 0: shorten file names
@@ -101,8 +101,10 @@ mkdir ./Trimmed/Trimmed_logs
 mv ./Trimmed/*.log ./Trimmed/Trimmed_logs
 
 
-
+################################
 ###step 3: read merging
+################################
+
 #creating directory for output of merging
 mkdir Merged
 
@@ -112,7 +114,10 @@ qsub -d ${FILELOCATION} -t 1-${NSAMPLE} -o ${FILELOCATION}/Logfiles -e ${FILELOC
 mkdir ./Merged/Merged_logs
 mv ./Merged/*.log ./Merged/Merged_logs
 
+################################
 ###step 4: quality control with FASTQC
+################################
+
 # create directory for fastqc output
 mkdir FastQC
 
@@ -137,16 +142,18 @@ done > ./FastQC/QC_read_distribution.txt
 
 # count sequences
 # only counting forward read as representative for PE
-grep -c '^@' ./Renamed/[0-9]*_R1.fastq > nSeqs_raw_V4V5_all.txt
-grep -c '^@' ./Clipped/[0-9]*_clip_R1.fastq >> nSeqs_clip_V4V5_all.txt
-grep -c '^@' ./Trimmed/[0-9]*_ptrim_R1.fastq >> nSeqs_trim_V4V5_all.txt
-grep -c '^@' ./Merged/[0-9]*.assembled.fastq >> nSeqs_merge_V4V5_all.txt
+grep -c '^@' ./Renamed/[0-9]*_R1.fastq >> nSeqs_raw_V3V4_all.txt
+grep -c '^@' ./Clipped/[0-9]*_clip_R1.fastq >> nSeqs_clip_V3V4_all.txt
+grep -c '^@' ./Trimmed/[0-9]*_ptrim_R1.fastq >> nSeqs_trim_V3V4_all.txt
+grep -c '^@' ./Merged/[0-9]*.assembled.fastq >> nSeqs_merge_V3V4_all.txt
 
 #put all the numbers in one table
-paste nSeqs_raw_V4V5_all.txt nSeqs_clip_V4V5_all.txt nSeqs_trim_V4V5_all.txt nSeqs_merge_V4V5_all.txt > nSeqs_V4V5_all.txt
+paste nSeqs_raw_V3V4_all.txt nSeqs_clip_V3V4_all.txt nSeqs_trim_V3V4_all.txt nSeqs_merge_V3V4_all.txt > nSeqs_V3V4_all.txt
 
-###step 5: swarm OTU clustering 
 
+################################
+###step 5: dereplicate the samples and OTu clustering using SWARM
+################################
 # create directory for swarm input and output
 mkdir Swarm
 #extracting FASTA
@@ -178,7 +185,9 @@ python ${AMPLICONTAB} *_dereplicated.fasta > amplicons_table.csv
 
 qsub -d ${FILELOCATION}/Swarm -o ${FILELOCATION}/Logfiles -e ${FILELOCATION}/Logfiles ${SWARM_qsub}
 
-# building OTU contingency table for multiple samples 
+
+#build OTU contingency table 
+
 STATS="amplicons_stats.txt"
 SWARMS="amplicons.swarms"
 AMPLICON_TABLE="amplicons_table.csv"
@@ -216,23 +225,54 @@ awk -v SWARM="${SWARMS}" -v TABLE="${AMPLICON_TABLE}"  'BEGIN {FS = " "
      delete samples
 }' "${STATS}" >> "${OTU_TABLE}"
 
+################################
+###step 6: Identify chimeras 
+################################
 
-###step 6: taxonomic classification
+sed -e '/^>/ s/_/;size=/' amplicons_seeds.fasta > amplicons_seeds_usearch.fasta
+
+cd ..
+mkdir Chimera
+
+#De novo chimera detection
+nohup vsearch --threads 10 --uchime_denovo Swarm/amplicons_seeds_usearch.fasta --nonchimeras Chimera/amplicons_nonchimeras_denovo.fasta >Chimera/uchime_denovo.out&
+
+
+#Reference chimera detection
+nohup vsearch --threads 10 --uchime_ref Chimera/amplicons_nonchimeras_denovo.fasta --db /scratch2/efadeev/gold.fa --nonchimeras Chimera/amplicons_nonchimeras_ref.fasta >Chimera/uchime_ref.out&
+
+
+sed -e '/^>/ s/;size=/_/' Chimera/amplicons_nonchimeras_ref.fasta > Swarm/amplicons_seeds_nochimeras.fasta
+
+
+
+################################
+###step 8: Remove singletons
+################################
+cd Swarm
 
 # convert lowercase sequences to uppercase sequences in amplicons_seeds.fasta
-awk '{print /^>/ ? $0 : toupper($0)}' amplicons_seeds.fasta > amplicons_seeds_uc.fasta
+awk '{print /^>/ ? $0 : toupper($0)}' amplicons_seeds_nochimeras.fasta > amplicons_seeds_uc.fasta
 
 #removal of singletons
 # this will output the accession numbers of all non-singleton swarms 
 # and a table with the precentage of retained sequences per sample if singleton swarms are removed
 Rscript ${REMOVE_SINGLE} 
+
+#add the removed singletons to the overview table
+paste ../nSeqs_V3V4_all.txt retainedSequences.txt > ../nSeqs_V3V4_overview.txt
+
+
 # rename the original amplicons_seeds_uc.fasta so that it is not overwritten
 mv amplicons_seeds_uc.fasta amplicons_seeds_uc_all.fasta
+
 # select only the representative sequences of non-singleton swarms 
 grep -A1 -F -f heavy.accnos amplicons_seeds_uc_all.fasta | sed '/^--$/d' > amplicons_seeds_uc.fasta
-
-
 cd ..
+
+################################
+###step 9: taxonomic classification
+################################
 
 
 # splitting seed sequence fasta file for parallel processing
@@ -274,6 +314,5 @@ cd ..
 # copy final output files to working directory
 cp ./Swarm/OTU_contingency_table.csv ./
 cp ./Sina/amplicons_seeds_taxonomy.txt ./
-
 
 

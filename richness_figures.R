@@ -8,6 +8,7 @@ library(ggplot2); packageVersion("ggplot2")
 library(reshape2); packageVersion("reshape2")
 library(iNEXT); packageVersion("iNEXT")
 library(cowplot); packageVersion("cowplot")
+library(dplyr); packageVersion("dplyr")
 
 #load scripts
 
@@ -225,7 +226,7 @@ V3V4_simpson <- V3V4_data.BAC.iNEXT.out$AsyEst[V3V4_data.BAC.iNEXT.out$AsyEst$Di
 V3V4_comm.char<- data.frame(PANGAEA_sampleID = paste(sample_data(V3V4_data.BAC)$Expedition,sample_data(V3V4_data.BAC)$Station, sep = "/"),
                             #StationName = sample_data(V3V4_data.BAC)$Station,
                             Type = sample_data(V3V4_data.BAC)$Type,
-                            Habitat = sample_data(V3V4_data.BAC)$merging,
+                            Environment = sample_data(V3V4_data.BAC)$merging,
                             Depth = sample_data(V3V4_data.BAC)$Depth,
                             #Sample_sum = V3V4_data.BAC.iNEXT.out$DataInfo$n,
                             Observed = V3V4_data.BAC.iNEXT.out$DataInfo$S.obs,
@@ -235,7 +236,8 @@ V3V4_comm.char<- data.frame(PANGAEA_sampleID = paste(sample_data(V3V4_data.BAC)$
                             Shannon.ext = V3V4_shannon$Estimator,
                             Simpson = V3V4_simpson$Observed,
                             Simpson.ext = V3V4_simpson$Estimator,
-                            Sample.cov = 100*V3V4_data.BAC.iNEXT.out$DataInfo$SC)
+                            Sample.cov = 100*V3V4_data.BAC.iNEXT.out$DataInfo$SC,
+                            Primer="V3V4")
 
 
 #V4V5
@@ -247,7 +249,7 @@ V4V5_simpson <- V4V5_data.BAC.iNEXT.out$AsyEst[V4V5_data.BAC.iNEXT.out$AsyEst$Di
 V4V5_comm.char<- data.frame(PANGAEA_sampleID = paste(sample_data(V4V5_data.BAC)$Expedition,sample_data(V4V5_data.BAC)$Station, sep = "/"),
                             #StationName = sample_data(V4V5_data.BAC)$Station,
                             Type = sample_data(V4V5_data.BAC)$Type,
-                            Habitat = sample_data(V4V5_data.BAC)$merging,
+                            Environment = sample_data(V4V5_data.BAC)$merging,
                             Depth = sample_data(V4V5_data.BAC)$Depth,
                             #Sample_sum = V4V5_data.BAC.iNEXT.out$DataInfo$n,
                             Observed = V4V5_data.BAC.iNEXT.out$DataInfo$S.obs,
@@ -257,38 +259,36 @@ V4V5_comm.char<- data.frame(PANGAEA_sampleID = paste(sample_data(V4V5_data.BAC)$
                             Shannon.ext = V4V5_shannon$Estimator,
                             Simpson = V4V5_simpson$Observed,
                             Simpson.ext = V4V5_simpson$Estimator,
-                            Sample.cov = 100*V4V5_data.BAC.iNEXT.out$DataInfo$SC)
+                            Sample.cov = 100*V4V5_data.BAC.iNEXT.out$DataInfo$SC,
+                            Primer="V4V5")
 
 #####################################
 #Alpha diversity significance tests
 #####################################
-t.test(V3V4_comm.char$Observed,V4V5_comm.char$Observed)
-t.test(V3V4_comm.char$Chao.cov,V4V5_comm.char$Chao.cov)
-t.test(V3V4_comm.char$Shannon,V4V5_comm.char$Shannon)
-t.test(V3V4_comm.char$Simpson,V4V5_comm.char$Simpson)
-
-#Explore the mean
-V3V4_comm.char$Primer <- "V3V4"
-V4V5_comm.char$Primer <- "V4V5"
-
 alpha_together <- rbind(V3V4_comm.char,V4V5_comm.char)
 
 df <- alpha_together %>%
-  select(Primer, Habitat,Chao.cov)
+  select(Primer, Environment,Chao.cov)
+
 summary(df %>% filter(Primer == "V3V4") %>% .$Chao.cov)
 summary(df %>% filter(Primer == "V4V5") %>% .$Chao.cov)
 
 #Chao
-t.test(Chao.cov~ Primer,data = alpha_together %>% filter(Habitat == "Sea-ice"))
-t.test(Chao.cov~ Primer,data = alpha_together %>% filter(Habitat == "Sediment"))
-t.test(Chao.cov~ Primer,data = alpha_together %>% filter(Habitat == "Surface-water"))
-t.test(Chao.cov~ Primer,data = alpha_together %>% filter(Habitat == "Deep-water"))
+t.test(Chao.cov~ Primer,data = alpha_together %>% filter(Environment == "Sea-ice"))
+t.test(Chao.cov~ Primer,data = alpha_together %>% filter(Environment == "Sediment"))
+t.test(Chao.cov~ Primer,data = alpha_together %>% filter(Environment == "Surface-water"))
+t.test(Chao.cov~ Primer,data = alpha_together %>% filter(Environment == "Deep-water"))
 
 
-t.test(Shannon~ Primer,data = alpha_together %>% filter(Habitat == "Sea-ice"))
-t.test(Shannon~ Primer,data = alpha_together %>% filter(Habitat == "Sediment"))
-t.test(Shannon~ Primer,data = alpha_together %>% filter(Habitat == "Surface-water"))
-t.test(Shannon~ Primer,data = alpha_together %>% filter(Habitat == "Deep-water"))
+t.test(Shannon~ Primer,data = alpha_together %>% filter(Environment == "Sea-ice"))
+t.test(Shannon~ Primer,data = alpha_together %>% filter(Environment == "Surface-water"))
+t.test(Shannon~ Primer,data = alpha_together %>% filter(Environment == "Deep-water"))
+t.test(Shannon~ Primer,data = alpha_together %>% filter(Environment == "Sediment"))
+
+t.test(Simpson~ Primer,data = alpha_together %>% filter(Environment == "Sea-ice"))
+t.test(Simpson~ Primer,data = alpha_together %>% filter(Environment == "Surface-water"))
+t.test(Simpson~ Primer,data = alpha_together %>% filter(Environment == "Deep-water"))
+t.test(Simpson~ Primer,data = alpha_together %>% filter(Environment == "Sediment"))
 
 write.table(alpha_together,"./Data/alpha_div.csv",col.names = TRUE,quote = FALSE, sep = ",")
 

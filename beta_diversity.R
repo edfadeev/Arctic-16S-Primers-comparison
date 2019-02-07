@@ -14,6 +14,7 @@ library(gridExtra); packageVersion("gridExtra")
 #load scripts
 source("./scripts/color_palettes.R")
 
+
 #load datasets 
 V3V4_data.BAC <- readRDS("./Data/V3V4_data_BAC.rds")
 V4V5_data.BAC <- readRDS("./Data/V4V5_data_BAC.rds")
@@ -109,17 +110,17 @@ for (i in levels(BAC.melt.combined.agg$merging)){
   sub <- BAC.melt.combined.agg[BAC.melt.combined.agg$merging == i,]
   p[[i]] <-ggplot(sub, aes(x = SampleID, y = Abundance, fill = Taxonomy)) + 
     facet_grid(~Primer) + labs(title = i)+
-    geom_bar(stat = "identity", position="fill", colour = "black") +
-    scale_y_continuous(breaks=NULL)+
+    geom_bar(stat = "identity",  colour = "black") +
+    #scale_y_continuous(breaks=NULL)+
     scale_fill_manual(values = taxa_col) +
     #coord_polar("y", start=0)+
     theme_classic(base_size = 10)+
-    theme(axis.line=element_blank(),
+    theme(axis.line.x=element_blank(),
           axis.text.x=element_blank(),
-          axis.text.y=element_blank(),
-          axis.ticks=element_blank(),
+          #axis.text.y=element_blank(),
+          axis.ticks.x=element_blank(),
           axis.title.x=element_blank(),
-          axis.title.y=element_blank(),
+          #axis.title.y=element_blank(),
           legend.position="none",
           panel.background=element_blank(),
           panel.border=element_blank(),

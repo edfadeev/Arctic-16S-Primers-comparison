@@ -1,0 +1,8 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.pdf
+*.tsv
+*.rds
+Data/Swarm-output/V4V5/OTU_contingency_table.csv

@@ -7,7 +7,7 @@ library(phyloseq); packageVersion("phyloseq")
 library(ggplot2); packageVersion("ggplot2")
 
 #load functions
-source('./scripts/ReadAmplicon_with_cl.R')
+source('./scripts/ReadAmplicon_with_cl_EF.R')
 source("./scripts/lm_eqn.R")
 source("./scripts/phyloseq_to_vegan.R")
 
