@@ -1,51 +1,31 @@
 	Expedition	Station	Type	Depth	DCM	merging	FISH
-X12	PS99	41	Sediment	5000	No	Sediment	
-X9	PS99	42	Sediment	5000	No	Sediment	
-X39	PS99	43	Water	10	No	Surface-water	
-X40	PS99	43	Water	28	Yes	Surface-water	1
-X4	PS99	48	Ice	0	No	Sea-ice	1
-X45	PS99	48	Water-FL	1000	No	Water-FL	
-X46	PS99	48	Water-PA	1000	No	Water-PA	
-X14	PS99	48	Sediment	5000	No	Sediment	
-X5	PS99	51	Ice	0	No	Sea-ice	
-X41	PS99	51	Water	5	No	Surface-water	
-X42	PS99	51	Water	13	Yes	Surface-water	1
-X13	PS99	51	Sediment	5000	No	Sediment	
-X10	PS99	52	Sediment	5000	No	Sediment	
-X6	PS99	53	Ice	0	No	Sea-ice	1
-X11	PS99	53	Sediment	5000	No	Sediment	
-X8	PS99	57	Sediment	5000	No	Sediment	
-X7	PS99	59	Ice	0	No	Sea-ice	
-X47	PS99	59	Water-FL	1000	No	Water-FL	
-X48	PS99	59	Water-PA	1000	No	Water-PA	
-X43	PS99	62	Water	10	No	Surface-water	
-X44	PS99	62	Water	20	Yes	Surface-water	
-X49	PS99	66	Water-FL	500	No	Water-FL	
-X50	PS99	66	Water-PA	500	No	Water-PA	
-X1	PS101	97	Water	50	No	Exclude	
-X2	PS101	97	Water	200	No	Exclude	
-X3	PS101	97	Water	400	No	Exclude	
-X15	PS101	97	Water	600	No	Deep-water	
-X16	PS101	97	Water	853	No	Deep-water	1
-X17	PS101	126	Water	10	No	Surface-water	
-X18	PS101	126	Water	200	No	Exclude	
-X19	PS101	126	Water	400	No	Exclude	
-X20	PS101	126	Water	600	No	Deep-water	
-X21	PS101	126	Water	1000	No	Deep-water	
-X22	PS101	149	Water	1.5	No	Surface-water	
-X23	PS101	149	Water	200	No	Exclude	
-X24	PS101	149	Water	400	No	Exclude	
-X25	PS101	149	Water	600	No	Deep-water	
-X26	PS101	149	Water	750	No	Deep-water	1
-X27	PS101	172	Water	1	No	Surface-water	
-X28	PS101	172	Water	200	No	Exclude	
-X29	PS101	172	Water	400	No	Exclude	
-X30	PS101	172	Water	600	No	Deep-water	
-X31	PS101	172	Water	620	No	Deep-water	
-X32	PS101	175	Water	10	No	Surface-water	
-X33	PS101	175	Water	50	No	Exclude	
-X34	PS101	175	Water	200	No	Exclude	
-X35	PS101	175	Water	1000	No	Deep-water	
-X36	PS101	175	Water	2000	No	Exclude	
-X37	PS101	175	Water	3000	No	Exclude	
-X38	PS101	175	Water	3230	No	Exclude	
+X1	PS99	48	Ice	0	No	Sea-ice	1
+X2	PS99	51	Ice	0	No	Sea-ice	
+X3	PS99	53	Ice	0	No	Sea-ice	1
+X4	PS99	59	Ice	0	No	Sea-ice	
+X9	PS99	41	Sediment	5000	No	Sediment	
+X6	PS99	42	Sediment	5000	No	Sediment	
+X11	PS99	48	Sediment	5000	No	Sediment	1
+X10	PS99	51	Sediment	5000	No	Sediment	
+X7	PS99	52	Sediment	5000	No	Sediment	
+X8	PS99	53	Sediment	5000	No	Sediment	1
+X5	PS99	57	Sediment	5000	No	Sediment	
+X25	PS99	43	Water	10	No	Surface-water	
+X26	PS99	43	Water	28	Yes	Surface-water	1
+X27	PS99	51	Water	5	No	Surface-water	
+X28	PS99	51	Water	13	Yes	Surface-water	1
+X29	PS99	62	Water	10	No	Surface-water	
+X30	PS99	62	Water	20	Yes	Surface-water	
+X12	PS101	97	Water	600	No	Deep-water	
+X13	PS101	97	Water	853	No	Deep-water	1
+X14	PS101	126	Water	10	No	Surface-water	
+X15	PS101	126	Water	600	No	Deep-water	
+X16	PS101	126	Water	1000	No	Deep-water	
+X17	PS101	149	Water	1.5	No	Surface-water	
+X18	PS101	149	Water	600	No	Deep-water	
+X19	PS101	149	Water	750	No	Deep-water	1
+X20	PS101	172	Water	1	No	Surface-water	
+X21	PS101	172	Water	600	No	Deep-water	
+X22	PS101	172	Water	620	No	Deep-water	
+X23	PS101	175	Water	10	No	Surface-water	
+X24	PS101	175	Water	1000	No	Deep-water	
