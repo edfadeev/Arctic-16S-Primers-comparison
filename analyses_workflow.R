@@ -10,7 +10,8 @@ library(reshape2); packageVersion("reshape2")
 library(iNEXT); packageVersion("iNEXT")
 library(tidyr); packageVersion("tidyr")
 library(dplyr); packageVersion("dplyr")
-library(drc); packageVersion("drc")
+library(plyr); packageVersion("plyr")
+library(ggsignif); packageVersion("ggsignif")
 
 #load scripts
 source("./scripts/color_palettes.R")
@@ -164,10 +165,9 @@ chl.agg <- as.data.frame(as.list(aggregate(Chloroplast~Primer,rbind(V3V4_mit_chl
 #Alpha diversity calculations
 #####################################
 #V3V4
-
 #Rarefy the dataset by the smallest sample
-rare_size <- min(sample_sums(V3V4_data.BAC))
-
+#rare_size <- min(sample_sums(V3V4_data.BAC))
+rare_size <- 12791
 # Initialize matrices to store alpha diversity indeces
 #Observed number of OTUs
 OTUs <- matrix(nrow = nsamp, ncol = trials)
@@ -250,19 +250,18 @@ V3V4_comm.char<- data.frame(PANGAEA_sampleID = paste(sample_data(V3V4_data.BAC)$
                             Depth = sample_data(V3V4_data.BAC)$Depth,
                             Sequences= sample_sums(V3V4_data.BAC),
                             Observed = round(OTUs_stats$mean,digits=0),
-                            Chao1 = round(rich_stats$mean,digits=1),
+                            Chao1 = rich_stats$mean,
                             Completness = round(100*(OTUs_stats$mean/rich_stats$mean),digits=1),
-                            Shannon = round(Shannon_stats$mean,digits=2),
-                            Simpson = round(Simpson_stats$mean,digits=2),
-                            Primer="V3V4")
+                            Shannon = Shannon_stats$mean,
+                            Simpson = Simpson_stats$mean,
+                            Primer="V3-V4")
 
 #####################################
-
 #V4V5
 
 #Rarefy the dataset by the smallest sample
-rare_size <- min(sample_sums(V4V5_data.BAC))
-
+#rare_size <- min(sample_sums(V4V5_data.BAC))
+rare_size <- 12791
 # Initialize matrices to store alpha diversity indeces
 #Observed number of OTUs
 OTUs <- matrix(nrow = nsamp, ncol = trials)
@@ -345,35 +344,58 @@ V4V5_comm.char<- data.frame(PANGAEA_sampleID = paste(sample_data(V4V5_data.BAC)$
                             Depth = sample_data(V4V5_data.BAC)$Depth,
                             Sequences= sample_sums(V4V5_data.BAC),
                             Observed = round(OTUs_stats$mean,digits=0),
-                            Chao1 = round(rich_stats$mean,digits=1),
+                            Chao1 = rich_stats$mean,
                             Completness = round(100*(OTUs_stats$mean/rich_stats$mean),digits=1),
-                            Shannon = round(Shannon_stats$mean,digits=2),
-                            Simpson = round(Simpson_stats$mean,digits=2),
-                            Primer="V4V5")
+                            Shannon = Shannon_stats$mean,
+                            Simpson = Simpson_stats$mean,
+                            Primer="V4-V5")
 
-
+#####################################
 #export alpha diversity merged table
-write.csv(rbind(V3V4_comm.char,V4V5_comm.char), "./Data/alpha_table.csv")
+write.csv(rbind(V3V4_comm.char,V4V5_comm.char), "./Data/alpha_table_12K.csv")
 
 #Alpha diversity significance tests
 alpha_together <- rbind(V3V4_comm.char,V4V5_comm.char)
 
-wilcox.test(Chao1~ Primer,data = alpha_together %>% filter(Environment == "Sea-ice"))
-wilcox.test(Chao1~ Primer,data = alpha_together %>% filter(Environment == "Surface-water"))
-wilcox.test(Chao1~ Primer,data = alpha_together %>% filter(Environment == "Deep-water"))
-wilcox.test(Chao1~ Primer,data = alpha_together %>% filter(Environment == "Sediment"))
+alpha_together$Environment <- factor(alpha_together$Environment,
+                                     levels=c("Sea-ice","Surface-water","Deep-water","Sediment"))
+alpha_together$Primer <- factor(alpha_together$Primer,
+                                     levels=c("V4-V5","V3-V4"))
 
-wilcox.test(Shannon~ Primer,data = alpha_together %>% filter(Environment == "Sea-ice"))
-wilcox.test(Shannon~ Primer,data = alpha_together %>% filter(Environment == "Surface-water"))
-wilcox.test(Shannon~ Primer,data = alpha_together %>% filter(Environment == "Deep-water"))
-wilcox.test(Shannon~ Primer,data = alpha_together %>% filter(Environment == "Sediment"))
+#Plot alpha diversity 
+chao1.p <- ggplot(alpha_together, aes(x = Primer, y = Chao1)) +
+  theme_classic(base_size = 12) +
+  labs(x = "Primer")+
+  geom_boxplot(outlier.color = "black", notch = FALSE)+
+  geom_jitter(position=position_jitter(0), alpha =0.2, colour = "gray50")+
+  facet_grid(Environment~.)+
+  coord_flip()+
+  geom_signif(comparisons = list(c("V3-V4", "V4-V5")), 
+              map_signif_level=TRUE, test = "wilcox.test")
 
-wilcox.test(Simpson~ Primer,data = alpha_together %>% filter(Environment == "Sea-ice"))
-wilcox.test(Simpson~ Primer,data = alpha_together %>% filter(Environment == "Surface-water"))
-wilcox.test(Simpson~ Primer,data = alpha_together %>% filter(Environment == "Deep-water"))
-wilcox.test(Simpson~ Primer,data = alpha_together %>% filter(Environment == "Sediment"))
+shannon.p <- ggplot(alpha_together, aes(x = Primer, y = Shannon)) +
+  theme_classic(base_size = 12) +
+  labs(x = "Primer")+
+  geom_boxplot(outlier.color = "black", notch = FALSE)+
+  geom_jitter(position=position_jitter(0), alpha =0.2, colour = "gray50")+
+  facet_grid(Environment~.)+
+  coord_flip()+
+  geom_signif(comparisons = list(c("V3-V4", "V4-V5")), 
+              map_signif_level=TRUE, test = "wilcox.test")
 
-#####################################
+simpson.p <- ggplot(alpha_together, aes(x = Primer, y = Simpson)) +
+  theme_classic(base_size = 12) +
+  labs(x = "Primer")+
+  geom_boxplot(outlier.color = "black", notch = FALSE)+
+  geom_jitter(position=position_jitter(0), alpha =0.2, colour = "gray50")+
+  facet_grid(Environment~.)+
+  coord_flip()+
+  geom_signif(comparisons = list(c("V3-V4", "V4-V5")), 
+                           map_signif_level=TRUE, test = "wilcox.test")
+
+plot_grid(chao1.p, shannon.p,simpson.p, ncol =3)
+
+
 #####################################
 #Community composition barplots
 #####################################
@@ -627,7 +649,7 @@ overview_class <- as.data.frame(as.list(aggregate(log2FoldChange.sum~class,overv
 #Compare to CARD-FISH
 #####################################
 #import raw counts
-raw.counts <- read.csv("../CARD-FISH/card-fish-counts-SH.csv", dec = ".", stringsAsFactors = FALSE)
+raw.counts <- read.csv("../CARD-FISH/card-fish-counts.csv", dec = ".", stringsAsFactors = FALSE)
 raw.counts$conc.FISH <- as.numeric(raw.counts$conc.FISH)
 
 #calculate mean and se for counts of ech taxonomic group
@@ -674,7 +696,8 @@ counts.agg.wide.ra$BACT <- counts.agg.wide.ra$BACT/counts.agg.wide.ra$EUB
 counts.agg.wide.ra$POL <- counts.agg.wide.ra$POL/counts.agg.wide.ra$EUB
 
 #melt the table for plotting
-counts.agg.ra <- melt(subset(counts.agg.wide.ra, select = -EUB))
+counts.agg.ra <- melt(subset(counts.agg.wide.ra, select = -EUB),
+                      id.vars = c("StationName","Depth"))
 
 #adjust some factors for plottting
 levels(counts.agg.ra$Depth) <- c("ice","DCM","MESO","SED")
@@ -788,6 +811,35 @@ for (i in levels(summary.agg.sub$Env)){
 ml.16s <- marrangeGrob(q, nrow=4, ncol=1)
 ml.16s
 #####################################
+test.fish <- counts.agg.abs
+test.fish$conc.FISH.se <- "FISH"
+names(test.fish) <- c("Station","Env","Taxa","Abundance","Method")
+
+revalue(test.fish$Taxa, c("ALT" = "Alteromonadales", 
+                          "GAM"= "Gammaproteobacteria",
+                          "SAR11"= "SAR11 clade",
+                          "BACT" = "Bacteroidia",
+                          "POL"="Polaribacter")) -> test.fish$Taxa
+
+
+revalue(test.fish$Env, c("ice" = "Sea-ice", 
+                         "DCM"= "Surface-water",
+                         "MESO"= "Deep-water",
+                         "SED" = "Sediment")) -> test.fish$Env
+
+
+test <- rbind(summary.agg.sub[,c("Station","Env","Taxa","Abundance","Method")], test.fish)
+
+
+test %>% spread(Method, Abundance) ->test.wide
+
+ddply(test.wide, .(Taxa), summarise, 
+      "corr" = cor.test(FISH, V3V4, method = "spearman")$estimate,
+      "p.value"= cor.test(FISH, V3V4, method = "spearman")$p.value)
+
+ddply(test.wide, .(Taxa), summarise, 
+      "corr" = cor.test(FISH, V4V5, method = "spearman")$estimate,
+      "p.value"= cor.test(FISH, V4V5, method = "spearman")$p.value)
 
 #####################################
 #Session info
