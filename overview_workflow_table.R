@@ -9,6 +9,13 @@ se <- function(x, na.rm=FALSE) {
   if (na.rm) x <- na.omit(x)
   sqrt(var(x)/length(x))}
 
+
+#load phyloseq objects
+V3V4_data.raw <- readRDS("./Data/V3V4_data_raw.rds")
+V4V5_data.raw <- readRDS("./Data/V4V5_data_raw.rds")
+V3V4_data.BAC <- readRDS("./Data/V3V4_data_BAC.rds")
+V4V5_data.BAC <- readRDS("./Data/V4V5_data_BAC.rds")
+
 #####################################
 #Qunatify reads retainment in the bionformatic pipeline
 #####################################
@@ -67,7 +74,7 @@ swarm_output.prop <- swarm_output.both[,c("Type","merging","Primer","SampleID","
 #####################################
 #summarize the workflow 
 #####################################
-swarm_output.agg.Type <- swarm_output.prop%>% group_by(Primer, merging) %>%
+swarm_output.agg.Type <- swarm_output.prop%>% group_by(Primer) %>%
                           summarize_at(c("Raw","Clipped","Trimmed","Merged","Swarm", "Final"), c("mean","se"))
 
 
@@ -87,12 +94,69 @@ chl.agg <- as.data.frame(as.list(aggregate(Chloroplast~Primer,rbind(V3V4_mit_chl
 
 
 #####################################
+# Compute prevalence of each feature
+#####################################
+#V3V4
+prevdf <-  apply(X = otu_table(V3V4_data.BAC),
+                 MARGIN = ifelse(taxa_are_rows(V3V4_data.BAC), yes = 1, no = 2),
+                 FUN = function(x){sum(x > 0)})
+
+# # Add taxonomy and total read counts to this data.frame
+prevdf.tax  <-  data.frame(Prevalence = prevdf,
+                           TotalAbundance = taxa_sums(V3V4_data.BAC),
+                           tax_table(V3V4_data.BAC))
+#summarize
+prevdf.tax.summary <- plyr::ddply(prevdf.tax, "phylum", function(df1){cbind(mean(df1$Prevalence),sum(df1$Prevalence))})
+
+# 
+# #plot
+prev_plot_phyl <- ggplot(prevdf.tax, aes(TotalAbundance, Prevalence / nsamples(V3V4_data.BAC),color=phylum)) +
+  # # Include a guess for parameter
+  geom_hline(yintercept = 0.15, alpha = 0.5, linetype = 2) + geom_point(size = 2, alpha = 0.7) +
+  scale_x_log10() +  xlab("Total Abundance") + ylab("Prevalence [Frac. Samples]") +
+  facet_wrap(~phylum) + theme(legend.position="none")
+
+#  Define prevalence threshold as 5% of total samples
+prevalenceThreshold <- round(0.15 * nsamples(V3V4_data.BAC))
+prevalenceThreshold
+
+# Execute prevalence filter, using `prune_taxa()` function
+V3V4_data.BAC.prev <-  prune_taxa((prevdf > prevalenceThreshold), V3V4_data.BAC)
+
+#V4V5
+prevdf <-  apply(X = otu_table(V4V5_data.BAC),
+                 MARGIN = ifelse(taxa_are_rows(V4V5_data.BAC), yes = 1, no = 2),
+                 FUN = function(x){sum(x > 0)})
+
+# # Add taxonomy and total read counts to this data.frame
+prevdf.tax  <-  data.frame(Prevalence = prevdf,
+                           TotalAbundance = taxa_sums(V4V5_data.BAC),
+                           tax_table(V4V5_data.BAC))
+#summarize
+prevdf.tax.summary <- plyr::ddply(prevdf.tax, "phylum", function(df1){cbind(mean(df1$Prevalence),sum(df1$Prevalence))})
+
+# 
+# #plot
+prev_plot_phyl <- ggplot(prevdf.tax, aes(TotalAbundance, Prevalence / nsamples(V4V5_data.BAC),color=phylum)) +
+  # # Include a guess for parameter
+  geom_hline(yintercept = 0.15, alpha = 0.5, linetype = 2) + geom_point(size = 2, alpha = 0.7) +
+  scale_x_log10() +  xlab("Total Abundance") + ylab("Prevalence [Frac. Samples]") +
+  facet_wrap(~phylum) + theme(legend.position="none")
+
+#  Define prevalence threshold as 5% of total samples
+prevalenceThreshold <- round(0.15* nsamples(V4V5_data.BAC))
+prevalenceThreshold
+
+# Execute prevalence filter, using `prune_taxa()` function
+V4V5_data.BAC.prev <-  prune_taxa((prevdf > prevalenceThreshold), V4V5_data.BAC)
+
+#####################################
 #Plot rarefaction
 ####################################
-iNEXT.V3V4 <- iNEXT(as.data.frame(otu_table(V3V4_data.BAC)), q=0, datatype="abundance")
+iNEXT.V3V4 <- iNEXT(as.data.frame(otu_table(V3V4_data.BAC.prev)), q=0, datatype="abundance")
 
 rare.V3V4<-fortify(iNEXT.V3V4, type=1)
-meta.V3V4<- as(sample_data(V3V4_data.BAC), "data.frame")
+meta.V3V4<- as(sample_data(V3V4_data.BAC.prev), "data.frame")
 meta.V3V4$site <- rownames(meta.V3V4)
 rare.V3V4$Community <- meta.V3V4$Community[match(rare.V3V4$site, meta.V3V4$site)] 
 rare.V3V4$StationName <- meta.V3V4$StationName[match(rare.V3V4$site, meta.V3V4$site)] 
@@ -111,7 +175,7 @@ rare.line.V3V4$method <- factor(rare.line.V3V4$method,
 V3V4_rare.p <- ggplot(rare.V3V4, aes(x=x, y=y, colour = site))+
   geom_line(aes(linetype = method), lwd = 0.5, data= rare.line.V3V4)+
   #geom_ribbon(aes(ymin=y.lwr, ymax= y.upr, colour = NULL), alpha = 0.2)+
-  geom_point(aes(shape=Type), size =3, data= rare.point.V3V4)+
+  geom_point(aes(shape=Type), size =3, data= rare.point.V3V4, colour = "black")+
   #geom_text(aes(label=label), size =2, data= rare.point, colour = "black", nudge_y = -100)+
   scale_colour_discrete(guide = FALSE)+
   labs(x = "Sample size", y = "Species richness")+
@@ -121,11 +185,11 @@ V3V4_rare.p <- ggplot(rare.V3V4, aes(x=x, y=y, colour = site))+
 
 
 
-iNEXT.V4V5<- iNEXT(as.data.frame(otu_table(V4V5_data.BAC)), q=0, datatype="abundance")
+iNEXT.V4V5<- iNEXT(as.data.frame(otu_table(V4V5_data.BAC.prev)), q=0, datatype="abundance")
 
 rare.V4V5<-fortify(iNEXT.V4V5, type=1)
 
-meta.V4V5<- as(sample_data(V4V5_data.BAC), "data.frame")
+meta.V4V5<- as(sample_data(V4V5_data.BAC.prev), "data.frame")
 meta.V4V5$site <- rownames(meta.V4V5)
 rare.V4V5$Community <- meta.V4V5$Community[match(rare.V4V5$site, meta.V4V5$site)] 
 rare.V4V5$StationName <- meta.V4V5$StationName[match(rare.V4V5$site, meta.V4V5$site)] 
@@ -144,7 +208,7 @@ rare.line.V4V5$method <- factor(rare.line.V4V5$method,
 V4V5_rare.p <- ggplot(rare.V4V5, aes(x=x, y=y, colour = site))+
   geom_line(aes(linetype = method), lwd = 0.5, data= rare.line.V4V5)+
   #geom_ribbon(aes(ymin=y.lwr, ymax= y.upr, colour = NULL), alpha = 0.2)+
-  geom_point(aes(shape=Type), size =3, data= rare.point.V4V5)+
+  geom_point(aes(shape=Type), size =3, data= rare.point.V4V5, colour = "black")+
   #geom_text(aes(label=label), size =2, data= rare.point, colour = "black", nudge_y = -100)+
   scale_colour_discrete(guide = FALSE)+
   labs(x = "Sample size", y = "Species richness")+
@@ -154,7 +218,7 @@ V4V5_rare.p <- ggplot(rare.V4V5, aes(x=x, y=y, colour = site))+
 
 plot_grid(V3V4_rare.p,V4V5_rare.p, ncol = 2)
 
-ggsave("./figures/rarefaction.pdf", 
+ggsave("./figures/rarefaction-prev.pdf", 
        plot = last_plot(),
        units = "cm",
        width = 30, 
@@ -163,57 +227,94 @@ ggsave("./figures/rarefaction.pdf",
        dpi = 300)
 
 #####################################
-#Alpha diversity statistical tests
+#Alpha diversity table
 ####################################
 # Calculate for V3V4
-V3V4_data.BAC.div <- estimate_richness(V3V4_data.BAC, split = TRUE, measures = NULL)
+V3V4_data.BAC.prev.div <- estimate_richness(V3V4_data.BAC.prev, split = TRUE, measures = NULL)
 
 #generate data set with all bacterial community characteristics
-V3V4_data.BAC_comm.char<- data.frame(Expedition = sample_data(V3V4_data.BAC)$Expedition,
-                                     Environment = sample_data(V3V4_data.BAC)$merging,
-                                     Depth = sample_data(V3V4_data.BAC)$Depth,
-                                     SampleID = sample_data(V3V4_data.BAC)$SampleID,
+V3V4_data.BAC.prev_comm.char<- data.frame(Expedition = sample_data(V3V4_data.BAC.prev)$Expedition,
+                                     Station = sample_data(V3V4_data.BAC.prev)$Station,
+                                     Environment = sample_data(V3V4_data.BAC.prev)$merging,
+                                     Depth = sample_data(V3V4_data.BAC.prev)$Depth,
+                                     SampleID = sample_data(V3V4_data.BAC.prev)$SampleID,
                                      Primer = "V3V4")
 
-V3V4_data.BAC_comm.char <- left_join(V3V4_data.BAC_comm.char, V3V4_swarm_output[,c("SampleID","Raw","Clipped", "Trimmed", "Merged", "Swarm", "Final")], by = "SampleID")
+V3V4_data.BAC.prev_comm.char <- left_join(V3V4_data.BAC.prev_comm.char, V3V4_swarm_output[,c("SampleID","Raw","Clipped", "Trimmed", "Merged", "Swarm", "Final")], by = "SampleID")
 
-V3V4_data.BAC_comm.char <- cbind(V3V4_data.BAC_comm.char,data.frame(
-                             Observed = V3V4_data.BAC.div$Observed,
-                             Chao1 = round(V3V4_data.BAC.div$Chao1,digits=0),
-                             Completness = round(100*V3V4_data.BAC.div$Observed/V3V4_data.BAC.div$Chao1, digits=2),
-                             Shanonn = round(V3V4_data.BAC.div$Shannon,digits=2),
-                             Simpson = round(V3V4_data.BAC.div$Simpson,digits=2),
-                             Evenness = round(V3V4_data.BAC.div$Shannon/log(V3V4_data.BAC.div$Observed),digits=2)))
+V3V4_data.BAC.prev_comm.char <- cbind(V3V4_data.BAC.prev_comm.char,data.frame(
+                             Observed = V3V4_data.BAC.prev.div$Observed,
+                             Chao1 = round(V3V4_data.BAC.prev.div$Chao1,digits=0),
+                             Completness = round(100*V3V4_data.BAC.prev.div$Observed/V3V4_data.BAC.prev.div$Chao1, digits=2),
+                             Shanonn = round(V3V4_data.BAC.prev.div$Shannon,digits=2),
+                             Simpson = round(V3V4_data.BAC.prev.div$Simpson,digits=2),
+                             Evenness = round(V3V4_data.BAC.prev.div$Shannon/log(V3V4_data.BAC.prev.div$Observed),digits=2)))
 
 
 # Calculate for V4V5
-V4V5_data.BAC.div <- estimate_richness(V4V5_data.BAC, split = TRUE, measures = NULL)
+V4V5_data.BAC.prev.div <- estimate_richness(V4V5_data.BAC.prev, split = TRUE, measures = NULL)
 
 #generate data set with all bacterial community characteristics
-V4V5_data.BAC_comm.char<- data.frame(Expedition = sample_data(V4V5_data.BAC)$Expedition,
-                                     Environment = sample_data(V4V5_data.BAC)$merging,
-                                     Depth = sample_data(V4V5_data.BAC)$Depth,
-                                     SampleID = sample_data(V4V5_data.BAC)$SampleID,
+V4V5_data.BAC.prev_comm.char<- data.frame(Expedition = sample_data(V4V5_data.BAC.prev)$Expedition,
+                                     Station = sample_data(V4V5_data.BAC.prev)$Station,
+                                     Environment = sample_data(V4V5_data.BAC.prev)$merging,
+                                     Depth = sample_data(V4V5_data.BAC.prev)$Depth,
+                                     SampleID = sample_data(V4V5_data.BAC.prev)$SampleID,
                                      Primer = "V4V5")
 
-V4V5_data.BAC_comm.char <- left_join(V4V5_data.BAC_comm.char, V4V5_swarm_output[,c("SampleID","Raw","Clipped", "Trimmed", "Merged", "Swarm", "Final")], by = "SampleID")
+V4V5_data.BAC.prev_comm.char <- left_join(V4V5_data.BAC.prev_comm.char, V4V5_swarm_output[,c("SampleID","Raw","Clipped", "Trimmed", "Merged", "Swarm", "Final")], by = "SampleID")
 
-V4V5_data.BAC_comm.char <- cbind(V4V5_data.BAC_comm.char,data.frame(
-  Observed = V4V5_data.BAC.div$Observed,
-  Chao1 = round(V4V5_data.BAC.div$Chao1,digits=0),
-  Completness = round(100*V4V5_data.BAC.div$Observed/V4V5_data.BAC.div$Chao1, digits=2),
-  Shanonn = round(V4V5_data.BAC.div$Shannon,digits=2),
-  Simpson = round(V4V5_data.BAC.div$Simpson,digits=2),
-  Evenness = round(V4V5_data.BAC.div$Shannon/log(V4V5_data.BAC.div$Observed),digits=2)))
-
-
+V4V5_data.BAC.prev_comm.char <- cbind(V4V5_data.BAC.prev_comm.char,data.frame(
+  Observed = V4V5_data.BAC.prev.div$Observed,
+  Chao1 = round(V4V5_data.BAC.prev.div$Chao1,digits=0),
+  Completness = round(100*V4V5_data.BAC.prev.div$Observed/V4V5_data.BAC.prev.div$Chao1, digits=2),
+  Shanonn = round(V4V5_data.BAC.prev.div$Shannon,digits=2),
+  Simpson = round(V4V5_data.BAC.prev.div$Simpson,digits=2),
+  Evenness = round(V4V5_data.BAC.prev.div$Shannon/log(V4V5_data.BAC.prev.div$Observed),digits=2)))
 
 #final overview table of all samples
-BAC_comm.char <- rbind(V3V4_data.BAC_comm.char,V4V5_data.BAC_comm.char)
+BAC_comm.char <- rbind(V3V4_data.BAC.prev_comm.char,V4V5_data.BAC.prev_comm.char)
 
 BAC_comm.char <- select(BAC_comm.char,-c("SampleID"))
 
 write.csv(BAC_comm.char, "./Data/alpha_table.csv")
 
 
+#coverage based on Chao1
+BAC_comm.char.cov.agg <- group_by(BAC_comm.char, Primer) %>%
+                          summarize(mean.cov = mean(Completness),
+                                    se.cov = se(Completness))
+
+
+#####################################
+#Richness statistics
+####################################
+BAC_comm.char$sample <- paste(BAC_comm.char$Environment,BAC_comm.char$Station,BAC_comm.char$Depth, sep = " ")
+              
+
+select(BAC_comm.char,c("sample", "Primer","Chao1")) %>% 
+group_by(sample, Primer, Chao1) %>% 
+  spread(Primer, Chao1) %>% 
+  separate(sample, c("Environment", "Station", "Depth"), " ") %>% 
+  group_by(Environment) %>% 
+  do(tidy(t.test(.$V3V4, 
+                 .$V4V5, 
+                 mu = 0, 
+                 alt = "two.sided", 
+                 paired = TRUE, 
+                 conf.level = 0.99)))
+  
+
+    
+select(BAC_comm.char,c("sample", "Primer","Observed")) %>% 
+  group_by(sample, Primer, Observed) %>% 
+  spread(Primer, Observed) %>% 
+  separate(sample, c("Environment", "Station", "Depth"), " ") %>% 
+  group_by(Environment) %>% 
+  do(tidy(t.test(.$V3V4, 
+                 .$V4V5, 
+                 mu = 0, 
+                 alt = "two.sided", 
+                 paired = TRUE, 
+                 conf.level = 0.99)))
 
