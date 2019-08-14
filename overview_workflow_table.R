@@ -1,5 +1,6 @@
 library("dplyr"); packageVersion("dplyr")
 library("tidyr"); packageVersion("tidyr")
+library("broom"); packageVersion("broom")
 library("iNEXT"); packageVersion("iNEXT")
 library("ggplot2"); packageVersion("ggplot2")
 library("cowplot"); packageVersion("cowplot")
@@ -122,6 +123,7 @@ prevalenceThreshold
 
 # Execute prevalence filter, using `prune_taxa()` function
 V3V4_data.BAC.prev <-  prune_taxa((prevdf > prevalenceThreshold), V3V4_data.BAC)
+saveRDS(V3V4_data.BAC.prev, "./Data/V3V4_data_BAC_prev.rds")
 
 #V4V5
 prevdf <-  apply(X = otu_table(V4V5_data.BAC),
@@ -149,6 +151,7 @@ prevalenceThreshold
 
 # Execute prevalence filter, using `prune_taxa()` function
 V4V5_data.BAC.prev <-  prune_taxa((prevdf > prevalenceThreshold), V4V5_data.BAC)
+saveRDS(V4V5_data.BAC.prev, "./Data/V4V5_data_BAC_prev.rds")
 
 #####################################
 #Plot rarefaction
@@ -246,7 +249,7 @@ V3V4_data.BAC.prev_comm.char <- cbind(V3V4_data.BAC.prev_comm.char,data.frame(
                              Observed = V3V4_data.BAC.prev.div$Observed,
                              Chao1 = round(V3V4_data.BAC.prev.div$Chao1,digits=0),
                              Completness = round(100*V3V4_data.BAC.prev.div$Observed/V3V4_data.BAC.prev.div$Chao1, digits=2),
-                             Shanonn = round(V3V4_data.BAC.prev.div$Shannon,digits=2),
+                             Shannon = round(V3V4_data.BAC.prev.div$Shannon,digits=2),
                              Simpson = round(V3V4_data.BAC.prev.div$Simpson,digits=2),
                              Evenness = round(V3V4_data.BAC.prev.div$Shannon/log(V3V4_data.BAC.prev.div$Observed),digits=2)))
 
@@ -268,7 +271,7 @@ V4V5_data.BAC.prev_comm.char <- cbind(V4V5_data.BAC.prev_comm.char,data.frame(
   Observed = V4V5_data.BAC.prev.div$Observed,
   Chao1 = round(V4V5_data.BAC.prev.div$Chao1,digits=0),
   Completness = round(100*V4V5_data.BAC.prev.div$Observed/V4V5_data.BAC.prev.div$Chao1, digits=2),
-  Shanonn = round(V4V5_data.BAC.prev.div$Shannon,digits=2),
+  Shannon = round(V4V5_data.BAC.prev.div$Shannon,digits=2),
   Simpson = round(V4V5_data.BAC.prev.div$Simpson,digits=2),
   Evenness = round(V4V5_data.BAC.prev.div$Shannon/log(V4V5_data.BAC.prev.div$Observed),digits=2)))
 
@@ -285,12 +288,10 @@ BAC_comm.char.cov.agg <- group_by(BAC_comm.char, Primer) %>%
                           summarize(mean.cov = mean(Completness),
                                     se.cov = se(Completness))
 
-
 #####################################
 #Richness statistics
 ####################################
 BAC_comm.char$sample <- paste(BAC_comm.char$Environment,BAC_comm.char$Station,BAC_comm.char$Depth, sep = " ")
-              
 
 select(BAC_comm.char,c("sample", "Primer","Chao1")) %>% 
 group_by(sample, Primer, Chao1) %>% 
@@ -304,11 +305,22 @@ group_by(sample, Primer, Chao1) %>%
                  paired = TRUE, 
                  conf.level = 0.99)))
   
+select(BAC_comm.char,c("sample", "Primer","Shannon")) %>% 
+  group_by(sample, Primer, Shannon) %>% 
+  spread(Primer, Shannon) %>% 
+  separate(sample, c("Environment", "Station", "Depth"), " ") %>% 
+  group_by(Environment) %>% 
+  do(tidy(t.test(.$V3V4, 
+                 .$V4V5, 
+                 mu = 0, 
+                 alt = "two.sided", 
+                 paired = TRUE, 
+                 conf.level = 0.99)))
 
-    
-select(BAC_comm.char,c("sample", "Primer","Observed")) %>% 
-  group_by(sample, Primer, Observed) %>% 
-  spread(Primer, Observed) %>% 
+
+select(BAC_comm.char,c("sample", "Primer","Evenness")) %>% 
+  group_by(sample, Primer, Evenness) %>% 
+  spread(Primer, Evenness) %>% 
   separate(sample, c("Environment", "Station", "Depth"), " ") %>% 
   group_by(Environment) %>% 
   do(tidy(t.test(.$V3V4, 
