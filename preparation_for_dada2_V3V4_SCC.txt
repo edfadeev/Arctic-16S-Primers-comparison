@@ -106,9 +106,8 @@ qsub -wd ${FILELOCATION} -o ${FILELOCATION}/Logfiles -e ${FILELOCATION}/Logfiles
 #check in log file length distribution and adjust accordingly in next step 
 
 #remove chimeras and assign taxonomy
-qsub -wd ${FILELOCATION} -o ${FILELOCATION}/Logfiles -e ${FILELOCATION}/Logfiles ../qsubs/dada2_chim_tax.qsub
+qsub -wd ${FILELOCATION} -o ${FILELOCATION}/Logfiles -e ${FILELOCATION}/Logfiles ../qsubs/dada2_chim.qsub
 
-#construct phylogenetic tree
-qsub -wd ${FILELOCATION} -o ${FILELOCATION}/Logfiles -e ${FILELOCATION}/Logfiles ../qsubs/dada2_phylo.qsub
-
+# assign taxonomy and construct phylogenetic tree
+qsub -wd ${FILELOCATION} -o ${FILELOCATION}/Logfiles -e ${FILELOCATION}/Logfiles ../qsubs/dada2_tax.qsub
 
