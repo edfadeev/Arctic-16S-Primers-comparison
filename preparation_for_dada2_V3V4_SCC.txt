@@ -1,0 +1,114 @@
+####################################
+#Preparations
+####################################
+#connect to the SCC with port forwarding
+ssh efadeev@scc1.bu.edu
+
+#activate environment
+conda activate dada2-v1.14
+
+export PATH=/usr2/collab/efadeev/.local/bin:$PATH
+module load R/3.6.2
+
+# set variables, program and script locations
+FILELOCATION="/projectnb/npsegre/efadeev_playground/Primer_analysis/V3V4"
+NSAMPLE="42"
+
+cd $FILELOCATION
+
+###step 0: shorten file names
+# save original file names
+ls -1v ./Original/*R1_001.fastq.gz > ./originalR1
+ls -1v ./Original/*R2_001.fastq.gz > ./originalR2
+
+mkdir Renamed
+
+# copy original files to new file names
+new=1
+for i in $(ls -1v ./Original/*R1_001.fastq.gz)
+do
+cp ${i} ./Renamed/${new}"_R1.fastq.gz"
+((new++))
+done
+
+new=1
+for i in $(ls -1v ./Original/*R2_001.fastq.gz)
+do
+cp ${i} ./Renamed/${new}"_R2.fastq.gz"
+((new++))
+done
+
+# check that the renaming was done correctly
+ls -1v ./Renamed/[0-9]*_R1.fastq.gz > ./renamedR1
+ls -1v ./Renamed/[0-9]*_R2.fastq.gz  > ./renamedR2
+
+paste ./originalR1 ./renamedR1 > ./fileID_R1
+paste ./originalR2 ./renamedR2 > ./fileID_R2
+
+#the following commands schould not give any output
+while read line ; do
+diff $(echo "$line")
+done < ./fileID_R1
+
+while read line ; do
+diff $(echo "$line")
+done < ./fileID_R2
+
+###step 1: primer clipping 
+#==FORWARD==
+#Bact341F:
+#5'-CCTACGGGNGGCWGCAG-3'         S-D-Bact-0341-b-S-17
+#and Bact341F plus up to 3 additional bases in front:
+#
+#  5'-TCCTACGGGNGGCWGCAG-3'
+# 5'-ATCCTACGGGNGGCWGCAG-3'
+#5'-TGTCCTACGGGNGGCWGCAG-3'
+#==REVERSE==
+#Bact785R:
+#5'-GACTACHVGGGTATCTAATCC-3'     S-D-Bact-0785-a-A-21
+
+# bacterial primer V3-V4
+FBC=CCTACGGGNGGCWGCAG # forward primer not anchored due to the mixed versions
+RBC=^GACTACHVGGGTATCTAATCC # reverse primer
+OFWD=17 # length of forward primer (17) - 1
+OREV=20 # length of reverse primer (21) - 1
+ERROR=0.16
+
+mkdir Clipped
+mkdir Logfiles
+
+#run primers clipping
+qsub -wd ${FILELOCATION} -t 1-${NSAMPLE} -o ${FILELOCATION}/Logfiles \
+-e ${FILELOCATION}/Logfiles -v FBC=${FBC},RBC=${RBC},OFWD=${OFWD},OREV=${OREV},ERROR=${ERROR} \
+../primers_clipping.sh 
+
+# cleaning up directories
+mkdir ./Clipped/Clipped_logs
+mkdir ./Clipped/Clipped_logs/rf
+mv ./Clipped/*.log ./Clipped/Clipped_logs/
+mv ./Clipped/*.info ./Clipped/Clipped_logs/
+mv Clipped/*rf* ./Clipped/Clipped_logs/rf/
+
+
+#feed samples into DADA2
+qsub -wd ${FILELOCATION} -o ${FILELOCATION}/Logfiles -e ${FILELOCATION}/Logfiles ../qsubs/dada2_input.qsub
+
+#check the quality plots and adjust the next step accordingly
+#filter low quality 
+qsub -wd ${FILELOCATION} -o ${FILELOCATION}/Logfiles -e ${FILELOCATION}/Logfiles ../qsubs/dada2_filter.qsub
+
+#error corrections
+qsub -wd ${FILELOCATION} -o ${FILELOCATION}/Logfiles -e ${FILELOCATION}/Logfiles ../qsubs/dada2_error_corr.qsub
+
+#merge reads
+qsub -wd ${FILELOCATION} -o ${FILELOCATION}/Logfiles -e ${FILELOCATION}/Logfiles ../qsubs/dada2_merge.qsub
+
+#check in log file length distribution and adjust accordingly in next step 
+
+#remove chimeras and assign taxonomy
+qsub -wd ${FILELOCATION} -o ${FILELOCATION}/Logfiles -e ${FILELOCATION}/Logfiles ../qsubs/dada2_chim_tax.qsub
+
+#construct phylogenetic tree
+qsub -wd ${FILELOCATION} -o ${FILELOCATION}/Logfiles -e ${FILELOCATION}/Logfiles ../qsubs/dada2_phylo.qsub
+
+
