@@ -113,7 +113,7 @@ dadaRs <- dada(filtRs, err=errR, multithread=TRUE)
 dadaFs[[1]]
 
 #Merge paired reads
-mergers <- mergePairs(dadaFs, filtFs, dadaRs, filtRs, verbose=TRUE)
+mergers <- mergePairs(dadaFs, filtFs, dadaRs, filtRs, verbose=TRUE, minOverlap = 10)
 
 seqtab <- makeSequenceTable(mergers)
 dim(seqtab)
@@ -129,7 +129,7 @@ sum(seqtab.nochim)/sum(seqtab)
 
 # inspect output: remove singletons and 'junk' sequences
 # read lengths modified for V34 amplicons / based upon output table where majority of reads occurs
-seqtab.nochim2 <- seqtab.nochim[, nchar(colnames(seqtab.nochim)) %in% c(400:440) & colSums(seqtab.nochim) > 1]
+seqtab.nochim2 <- seqtab.nochim[, nchar(colnames(seqtab.nochim)) %in% c(360:400) & colSums(seqtab.nochim) > 1]
 dim(seqtab.nochim2)
 summary(rowSums(seqtab.nochim2)/rowSums(seqtab.nochim))
 
@@ -144,7 +144,7 @@ rownames(track) <- sample.names
 write.csv(track, file.path("Report","dada2_reads_output.csv"))
 
 #assign taxonomy
-taxa <- assignTaxonomy(seqtab.nochim2, "../tax/silva_nr_v138_train_set.fa.gz", multithread=TRUE)
+taxa <- assignTaxonomy(seqtab.nochim2, "../tax/silva_nr_v138_train_set.fa.gz", multithread=TRUE, tryRC = TRUE)
 taxa <- addSpecies(taxa, "../tax/silva_species_assignment_v138.fa.gz")
 
 seqs <- getSequences(seqtab.nochim2)
