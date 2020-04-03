@@ -1,0 +1,43 @@
+SampleID,sample_title,Primer_set,Type,Depth
+12,PS101/126-Deep-water-depth:1000-V3V4,V3V4,Water,700
+11,PS101/126-Deep-water-depth:600-V3V4,V3V4,Water,600
+10,PS101/126-Surface-water-depth:10-V3V4,V3V4,Water,10
+15,PS101/149-Deep-water-depth:600-V3V4,V3V4,Water,600
+16,PS101/149-Deep-water-depth:750-V3V4,V3V4,Water,750
+14,PS101/149-Surface-water-depth:1.5-V3V4,V3V4,Water,1.5
+18,PS101/172-Deep-water-depth:600-V3V4,V3V4,Water,600
+19,PS101/172-Deep-water-depth:620-V3V4,V3V4,Water,620
+17,PS101/172-Surface-water-depth:1-V3V4,V3V4,Water,1
+21,PS101/175-Deep-water-depth:1000-V3V4,V3V4,Water,1000
+20,PS101/175-Surface-water-depth:10-V3V4,V3V4,Water,10
+7,PS101/97-Deep-water-depth:600-V3V4,V3V4,Water,600
+8,PS101/97-Deep-water-depth:853-V3V4,V3V4,Water,853
+42,PS99/41-Sediment-depth:5000-V3V4,V3V4,Sediment,2344
+39,PS99/42-Sediment-depth:5000-V3V4,V3V4,Sediment,2460
+22,PS99/43-Surface-water-depth:10-V3V4,V3V4,Water,10
+23,PS99/43-Surface-water-depth:28-V3V4,V3V4,Water,28
+1,PS99/48-Sea-ice-depth:0-V3V4,V3V4,Sea ice,0
+36,PS99/48-Sediment-depth:5000-V3V4,V3V4,Sediment,2604
+2,PS99/51-Sea-ice-depth:0-V3V4,V3V4,Sea ice,0
+37,PS99/51-Sediment-depth:5000-V3V4,V3V4,Sediment,1002
+25,PS99/51-Surface-water-depth:13-V3V4,V3V4,Water,13
+24,PS99/51-Surface-water-depth:5-V3V4,V3V4,Water,5
+40,PS99/52-Sediment-depth:5000-V3V4,V3V4,Sediment,2620
+9,PS99/53-Sea-ice-depth:0-V3V4,V3V4,Sea ice,0
+41,PS99/53-Sediment-depth:5000-V3V4,V3V4,Sediment,2604
+38,PS99/57-Sediment-depth:5000-V3V4,V3V4,Sediment,1540
+13,PS99/59-Sea-ice-depth:0-V3V4,V3V4,Sea ice,0
+26,PS99/62-Surface-water-depth:10-V3V4,V3V4,Water,10
+27,PS99/62-Surface-water-depth:20-V3V4,V3V4,Water,20
+28,FRAM_1078_Fevi_3_oben_1_bactV3V4,V3V4,Sediment.trap,400
+29,FRAM_1098_Fevi_3_oben_6_bactV3V4,V3V4,Sediment.trap,400
+30,FRAM_1122_Fevi_3_oben_12_bactV3V4,V3V4,Sediment.trap,400
+31,FRAM_1150_Fevi_3_oben_19_bactV3V4,V3V4,Sediment.trap,400
+32,FRAM_2963_Fevi_32_oben_2_bactV3V4,V3V4,Sediment.trap,400
+33,FRAM_2987_Fevi_32_oben_8_bactV3V4,V3V4,Sediment.trap,400
+34,FRAM_2999_Fevi_32_oben_11_bactV3V4,V3V4,Sediment.trap,400
+35,FRAM_3031_Fevi_32_oben_19_bactV3V4,V3V4,Sediment.trap,400
+3,FRAM_3435_Fevi_26_unten_1_5_bactV3V4,V3V4,Sediment.trap,800
+4,FRAM_3443_Fevi_26_unten_2_5_bactV3V4,V3V4,Sediment.trap,800
+5,FRAM_3459_Fevi_26_unten_11_5_bactV3V4,V3V4,Sediment.trap,800
+6,FRAM_3467_Fevi_26_unten_12_5_bactV3V4,V3V4,Sediment.trap,800
