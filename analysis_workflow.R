@@ -7,6 +7,7 @@ library(phyloseq); packageVersion("phyloseq")
 library(Biostrings); packageVersion("Biostrings")
 library(ggplot2); packageVersion("ggplot2")
 library(dplyr); packageVersion("dplyr")
+library(iNEXT); packageVersion("iNEXT")
 
 theme_set(theme_bw())
 
@@ -21,7 +22,8 @@ sample_df <- read.csv("new_analysis_030420/data/V3V4/V3V4_samples_list.csv", hea
 
 V3V4_ps <- phyloseq(otu_table(seqtab.nochim2, taxa_are_rows=FALSE), 
                sample_data(sample_df), 
-               tax_table(taxa), phy_tree(fitGTR$tree))
+               tax_table(taxa)#, phy_tree(fitGTR$tree)
+               )
 
 #add reference sequence and replace variants with ASVs
 dna <- Biostrings::DNAStringSet(taxa_names(V3V4_ps))
@@ -30,7 +32,7 @@ V3V4_ps <- merge_phyloseq(V3V4_ps, dna)
 taxa_names(V3V4_ps) <- paste0("ASV", seq(ntaxa(V3V4_ps)))
 
 #remove the unsuccesful sample 9
-V3V4_ps<- subset_samples(V3V4_ps, !sample_title %in% c("FRAM_2963_Fevi_32_oben_2_bactV3V4"))
+V3V4_ps<- subset_samples(V3V4_ps, !sample_title %in% c("FRAM_2963_Fevi_32_oben_2"))
 
 #check how many ASVs were unclassified on phylum level, or assigned to chloroplast and Mitochondria
 V3V4_ps_uncl <- subset_taxa(V3V4_ps, is.na(Phylum))
@@ -46,6 +48,10 @@ V3V4_ps0 <- subset_taxa(V3V4_ps, !is.na(Phylum) & !Order %in% c("Chloroplast") &
 1-sum(sample_sums(V3V4_ps0))/sum(sample_sums(V3V4_ps))
 
 dim(otu_table(V3V4_ps0))[2]/dim(otu_table(V3V4_ps))[2]
+
+
+rm(list=ls()[! ls() %in% c("V3V4_ps0")])
+
 
 #load V4V5 dataset
 load("./new_analysis_030420/data/V4V5/V4V5_dada2.Rdata")
@@ -65,7 +71,7 @@ V4V5_ps <- merge_phyloseq(V4V5_ps, dna)
 taxa_names(V4V5_ps) <- paste0("ASV", seq(ntaxa(V4V5_ps)))
 
 #remove the unsuccesful sample 9
-V4V5_ps<- subset_samples(V4V5_ps, !sample_title %in% c("FRAM_2963_Fevi_32_oben_2_bactV4V5"))
+V4V5_ps<- subset_samples(V4V5_ps, !sample_title %in% c("FRAM_2963_Fevi_32_oben_2"))
 
 #check how many ASVs were unclassified on phylum level, or assigned to chloroplast and Mitochondria
 V4V5_ps_uncl <- subset_taxa(V4V5_ps, is.na(Phylum))
@@ -125,7 +131,6 @@ V3V4_comm.char <- merge(V3V4_meta,V3V4_reads.tab,by =0) %>%
              "Inverse Simpson Index" = "InvSimpson")
 
 
-
 #V4V5
 V4V5_reads.tab <- read.csv2("./new_analysis_030420/data/V4V5/dada2_reads_output.csv",
                             header = TRUE, sep = ",", row.names = "X")
@@ -170,16 +175,61 @@ as.data.frame(as.list(aggregate(`Seq. proportions`~`Primer set`,
                                 FUN = function(x) c(mean = mean(x), sd = sd(x), count=length(x)))))
 
 
-
 #####################################
 #Plot rarefaction
 ####################################
-V3V4_rare.p <- ggrare(V3V4_ps0, step = 1000, color = "Type", label = NULL, se = FALSE) 
-V3V4_rare.p <- V3V4_rare.p +facet_wrap(~Type)
+#V3V4
+V3V4_ps0.iNEXT <- iNEXT(as.data.frame(t(otu_table(V3V4_ps0, taxa_are_rows=FALSE))), q=0, datatype="abundance")
 
+V3V4_ps0.iNEXT.rare <-fortify(V3V4_ps0.iNEXT, type=1)
 
+V3V4_ps0.iNEXT.meta <- as(sample_data(V3V4_ps0), "data.frame")
+V3V4_ps0.iNEXT.meta$site <- rownames(V3V4_ps0.iNEXT.meta)
 
+V3V4_ps0.iNEXT.rare$Type <- V3V4_ps0.iNEXT.meta$Type[match(V3V4_ps0.iNEXT.rare$site, V3V4_ps0.iNEXT.meta$site)] 
+V3V4_ps0.iNEXT.rare$SampleName <- V3V4_ps0.iNEXT.meta$sample_title[match(V3V4_ps0.iNEXT.rare$site, V3V4_ps0.iNEXT.meta$site)] 
 
+V3V4_ps0.iNEXT.rare.point <- V3V4_ps0.iNEXT.rare[which(V3V4_ps0.iNEXT.rare$method == "observed"),]
+V3V4_ps0.iNEXT.rare.line <- V3V4_ps0.iNEXT.rare[which(V3V4_ps0.iNEXT.rare$method != "observed"),]
+V3V4_ps0.iNEXT.rare.line$method <- factor (V3V4_ps0.iNEXT.rare.line$method,
+                                           c("interpolated", "extrapolated"),
+                                           c("interpolation", "extrapolation"))
+
+V3V4_ps0.iNEXT.rare.line$Primer <- "V3V5"
+V3V4_ps0.iNEXT.rare.point$Primer <- "V3V5"
+
+#V4V5
+V4V5_ps0.iNEXT <- iNEXT(as.data.frame(t(otu_table(V4V5_ps0, taxa_are_rows=FALSE))), q=0, datatype="abundance")
+
+V4V5_ps0.iNEXT.rare <-fortify(V4V5_ps0.iNEXT, type=1)
+
+V4V5_ps0.iNEXT.meta <- as(sample_data(V4V5_ps0), "data.frame")
+V4V5_ps0.iNEXT.meta$site <- rownames(V4V5_ps0.iNEXT.meta)
+
+V4V5_ps0.iNEXT.rare$Type <- V4V5_ps0.iNEXT.meta$Type[match(V4V5_ps0.iNEXT.rare$site, V4V5_ps0.iNEXT.meta$site)] 
+V4V5_ps0.iNEXT.rare$SampleName <- V4V5_ps0.iNEXT.meta$sample_title[match(V4V5_ps0.iNEXT.rare$site, V4V5_ps0.iNEXT.meta$site)] 
+
+V4V5_ps0.iNEXT.rare.point <- V4V5_ps0.iNEXT.rare[which(V4V5_ps0.iNEXT.rare$method == "observed"),]
+V4V5_ps0.iNEXT.rare.line <- V4V5_ps0.iNEXT.rare[which(V4V5_ps0.iNEXT.rare$method != "observed"),]
+V4V5_ps0.iNEXT.rare.line$method <- factor (V4V5_ps0.iNEXT.rare.line$method,
+                            c("interpolated", "extrapolated"),
+                            c("interpolation", "extrapolation"))
+
+V4V5_ps0.iNEXT.rare.line$Primer <- "V4V5"
+V4V5_ps0.iNEXT.rare.point$Primer <- "V4V5"
+
+iNEXT.rare.line <- rbind(V3V4_ps0.iNEXT.rare.line,V4V5_ps0.iNEXT.rare.line)
+iNEXT.rare.point <- rbind(V3V4_ps0.iNEXT.rare.point,V4V5_ps0.iNEXT.rare.point)
+
+levels(iNEXT.rare.line$Type) <- c("Sea ice", "Water", "Sediment.trap","Sediment")
+
+rare.p <- ggplot(V4V5_ps0.iNEXT.rare, aes(x=x, y=y, shape = site))+
+  geom_line(aes(linetype = method, colour = Primer), lwd = 0.5, data= iNEXT.rare.line)+
+  geom_point(shape = 21, size =3, colour = "black", data= iNEXT.rare.point)+
+  labs(x = "Sample size", y = "Species richness")+
+  xlim(0,1.5e5)+
+  facet_wrap(Type~Primer, ncol = 2,scales = "free")+
+  theme_classic(base_size = 12)+theme(legend.position="none")
 
 
 
