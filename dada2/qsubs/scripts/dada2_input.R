@@ -31,10 +31,33 @@ sample.names <- sapply(strsplit(basename(fnFs), "_clip_R1.fastq"), `[`, 1)
 filt_path <- file.path("Report")
 if(!file_test("-d", filt_path)) dir.create(filt_path)
 
-plot.quals <- plotQualityProfile(fnFs)
-ggsave(file.path("Report","qualplot_F.pdf"), plot.quals, device="pdf")
+# quality check
+QualityProfileFs <- list()
+for(i in 1:length(fnFs)) {
+  QualityProfileFs[[i]] <- list()
+  QualityProfileFs[[i]][[1]] <- plotQualityProfile(fnFs[i])
+}
+pdf(file.path("Report","RawProfileForward.pdf"))
+for(i in 1:length(fnFs)) {
+  do.call("grid.arrange", QualityProfileFs[[i]])  
+}
+dev.off()
+rm(QualityProfileFs)
 
-plot.quals <- plotQualityProfile(fnRs)
-ggsave(file.path("Report","qualplot_R.pdf"), plot.quals, device="pdf")
+QualityProfileRs <- list()
+for(i in 1:length(fnRs)) {
+  QualityProfileRs[[i]] <- list()
+  QualityProfileRs[[i]][[1]] <- plotQualityProfile(fnRs[i])
+}
+pdf(file.path("Report","RawProfileReverse.pdf"))
+for(i in 1:length(fnRs)) {
+  do.call("grid.arrange", QualityProfileRs[[i]])  
+}
+dev.off()
+rm(QualityProfileRs)
 
 save.image(file.path("V3V4_dada2.Rdata"))
+
+
+
+
