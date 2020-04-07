@@ -26,24 +26,24 @@ write.csv(out, file= file.path("Report","dada2_filterAndTrim_output.csv"))
 
 # quality check
 QualityProfileFs <- list()
-for(i in 1:length(fnFs)) {
+for(i in 1:length(filtFs)) {
   QualityProfileFs[[i]] <- list()
-  QualityProfileFs[[i]][[1]] <- plotQualityProfile(fnFs[i])
+  QualityProfileFs[[i]][[1]] <- plotQualityProfile(filtFs[i])
 }
 pdf(file.path("Report","QualityProfileForward.pdf"))
-for(i in 1:length(fnFs)) {
+for(i in 1:length(filtFs)) {
   do.call("grid.arrange", QualityProfileFs[[i]])  
 }
 dev.off()
 rm(QualityProfileFs)
 
 QualityProfileRs <- list()
-for(i in 1:length(fnRs)) {
+for(i in 1:length(filtRs)) {
   QualityProfileRs[[i]] <- list()
-  QualityProfileRs[[i]][[1]] <- plotQualityProfile(fnRs[i])
+  QualityProfileRs[[i]][[1]] <- plotQualityProfile(filtRs[i])
 }
 pdf(file.path("Report","QualityProfileReverse.pdf"))
-for(i in 1:length(fnRs)) {
+for(i in 1:length(filtRs)) {
   do.call("grid.arrange", QualityProfileRs[[i]])  
 }
 dev.off()
