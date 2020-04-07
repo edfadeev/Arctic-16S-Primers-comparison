@@ -114,7 +114,7 @@ seqtab<- mergeSequenceTables(table1= makeSequenceTable(mergers_hi), table2 = mak
 save.image(file.path("V3V4_dada2.Rdata"))
 
 #Combine together sequences that are identical 
-collapseNoMismatch(seqtab, verbose = TRUE)
+seqtab <- collapseNoMismatch(seqtab, verbose = TRUE)
 
 dim(seqtab)
 
