@@ -70,12 +70,36 @@ out_hi <- filterAndTrim(fnFs_hi, filtFs_hi, fnRs_hi, filtRs_hi,
                      maxN=0, maxEE=c(2,3), truncQ=2, rm.phix=TRUE,
                      compress=TRUE, multithread=TRUE)
 
-out_mi <- filterAndTrim(fnFs_mi, filtFs_mi, fnRs_mi, filtRs_mi, truncLen=c(255,200),
-                        maxN=0, maxEE=c(2,5), truncQ=2, rm.phix=TRUE,
+out_mi <- filterAndTrim(fnFs_mi, filtFs_mi, fnRs_mi, filtRs_mi, truncLen=c(235,200),
+                        maxN=0, maxEE=c(3,5), truncQ=2, rm.phix=TRUE,
                         compress=TRUE, multithread=TRUE, verbose = TRUE)
 
 write.csv(rbind(out_hi,out_mi), file= file.path("Report","dada2_filterAndTrim_output.csv"))
 
+# quality check
+QualityProfileFs <- list()
+for(i in 1:length(filtFs)) {
+  QualityProfileFs[[i]] <- list()
+  QualityProfileFs[[i]][[1]] <- plotQualityProfile(filtFs[i])
+}
+pdf(file.path("Report","FiltProfileForward.pdf"))
+for(i in 1:length(filtFs)) {
+  do.call("grid.arrange", QualityProfileFs[[i]])  
+}
+dev.off()
+rm(QualityProfileFs)
+
+QualityProfileRs <- list()
+for(i in 1:length(filtRs)) {
+  QualityProfileRs[[i]] <- list()
+  QualityProfileRs[[i]][[1]] <- plotQualityProfile(filtRs[i])
+}
+pdf(file.path("Report","FiltProfileReverse.pdf"))
+for(i in 1:length(filtRs)) {
+  do.call("grid.arrange", QualityProfileRs[[i]])  
+}
+dev.off()
+rm(QualityProfileRs)
 
 # Learn errors 
 errF_hi <- learnErrors(filtFs_hi, multithread = TRUE)

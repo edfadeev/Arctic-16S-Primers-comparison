@@ -76,7 +76,30 @@ out_mi <- filterAndTrim(fnFs_mi, filtFs_mi, fnRs_mi, filtRs_mi, truncLen=c(255,2
 
 write.csv(rbind(out_hi,out_mi), file= file.path("Report","dada2_filterAndTrim_output.csv"))
 
+# quality check
+QualityProfileFs <- list()
+for(i in 1:length(filtFs)) {
+  QualityProfileFs[[i]] <- list()
+  QualityProfileFs[[i]][[1]] <- plotQualityProfile(filtFs[i])
+}
+pdf(file.path("Report","FiltProfileForward.pdf"))
+for(i in 1:length(filtFs)) {
+  do.call("grid.arrange", QualityProfileFs[[i]])  
+}
+dev.off()
+rm(QualityProfileFs)
 
+QualityProfileRs <- list()
+for(i in 1:length(filtRs)) {
+  QualityProfileRs[[i]] <- list()
+  QualityProfileRs[[i]][[1]] <- plotQualityProfile(filtRs[i])
+}
+pdf(file.path("Report","FiltProfileReverse.pdf"))
+for(i in 1:length(filtRs)) {
+  do.call("grid.arrange", QualityProfileRs[[i]])  
+}
+dev.off()
+rm(QualityProfileRs)
 # Learn errors 
 errF_hi <- learnErrors(filtFs_hi, multithread = TRUE)
 errR_hi <- learnErrors(filtRs_hi, multithread = TRUE)
