@@ -227,7 +227,7 @@ rare.p <- ggplot(V4V5_ps0.iNEXT.rare, aes(x=x, y=y, shape = site))+
   geom_line(aes(linetype = method, colour = Primer), lwd = 0.5, data= iNEXT.rare.line)+
   geom_point(shape = 21, size =3, colour = "black", data= iNEXT.rare.point)+
   labs(x = "Sample size", y = "Species richness")+
-  xlim(0,1.5e5)+
+  xlim(0,2e5)+
   facet_wrap(Type~Primer, ncol = 2,scales = "free")+
   theme_classic(base_size = 12)+theme(legend.position="none")
 
