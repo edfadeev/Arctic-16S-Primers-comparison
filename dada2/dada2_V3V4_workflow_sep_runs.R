@@ -53,7 +53,7 @@ names(filtRs) <- sample.names
 #separate the different runs
 #Hiseq
 fnFs_hi<- sort(file.path("Clipped",paste(c(22,23,26,27), "_clip_R1.fastq", sep = "")))
-fnRs_hi<- sort(file.path("Clipped",paste(c(22,23,26,27), "_clip_R1.fastq", sep = ""))) 
+fnRs_hi<- sort(file.path("Clipped",paste(c(22,23,26,27), "_clip_R2.fastq", sep = ""))) 
 filtFs_hi<- sort(file.path("Filtered",paste(c(22,23,26,27), "_F_filt.fastq.gz", sep = "")))
 filtRs_hi<- sort(file.path("Filtered",paste(c(22,23,26,27), "_R_filt.fastq.gz", sep = ""))) 
 #Filter and trim
@@ -86,6 +86,24 @@ dadaFs_mi1 <- dada(filtFs_mi1, err=errF_mi1, multithread=TRUE)
 dadaRs_mi1 <- dada(filtRs_mi1, err=errR_mi1, multithread=TRUE)
 #Merge paired reads
 mergers_mi1 <- mergePairs(dadaFs_mi1, filtFs_mi1, dadaRs_mi1, filtRs_mi1, verbose=TRUE, minOverlap = 10)
+
+#MiSeq 2 - 493:227
+fnFs_mi2 <- sort(file.path("Clipped",paste(c(24,25), "_clip_R1.fastq", sep = "")))
+fnRs_mi2 <- sort(file.path("Clipped",paste(c(24,25), "_clip_R2.fastq", sep = "")))
+filtFs_mi2 <- sort(file.path("Filtered",paste(c(24,25), "_F_filt.fastq.gz", sep = "")))
+filtRs_mi2 <- sort(file.path("Filtered",paste(c(24,25), "_R_filt.fastq.gz", sep = "")))
+#Filter and trim
+out_mi2 <- filterAndTrim(fnFs_mi2, filtFs_mi2, fnRs_mi2, filtRs_mi2, truncLen=c(255,200),
+                         maxN=0, maxEE=c(2,4), truncQ=2, rm.phix=TRUE,
+                         compress=TRUE, multithread=TRUE, verbose = TRUE)
+# Learn errors
+errF_mi2 <- learnErrors(filtFs_mi2, multithread = TRUE)
+errR_mi2 <- learnErrors(filtRs_mi2, multithread = TRUE)
+# Sample Inference 
+dadaFs_mi2 <- dada(filtFs_mi2, err=errF_mi2, multithread=TRUE)
+dadaRs_mi2 <- dada(filtRs_mi2, err=errR_mi2, multithread=TRUE)
+#Merge paired reads
+mergers_mi2 <- mergePairs(dadaFs_mi2, filtFs_mi2, dadaRs_mi2, filtRs_mi2, verbose=TRUE, minOverlap = 10)
 
 #MiSeq 3 - 493:291
 fnFs_mi3 <- sort(file.path("Clipped",paste(c(28:31), "_clip_R1.fastq", sep = "")))
@@ -213,7 +231,7 @@ dadaRs_mi9 <- dada(filtRs_mi9, err=errR_mi9, multithread=TRUE)
 #Merge paired reads
 mergers_mi9 <- mergePairs(dadaFs_mi9, filtFs_mi9, dadaRs_mi9, filtRs_mi9, verbose=TRUE, minOverlap = 10)
 
-#MiSeq 10 - 493:307
+#MiSeq 10 - 493:471
 fnFs_mi10 <- sort(file.path("Clipped",paste(c(3:6), "_clip_R1.fastq", sep = "")))
 fnRs_mi10 <- sort(file.path("Clipped",paste(c(3:6), "_clip_R2.fastq", sep = "")))
 filtFs_mi10 <- sort(file.path("Filtered",paste(c(3:6), "_F_filt.fastq.gz", sep = "")))
