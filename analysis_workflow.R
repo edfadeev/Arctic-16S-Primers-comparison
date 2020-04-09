@@ -15,9 +15,9 @@ theme_set(theme_bw())
 #Import dada2 output into phyloseq
 #####################################
 #load V3V4 dataset
-load("./new_analysis_030420/data/V3V4/V3V4_dada2.Rdata")
+load("./Primers_comparison/new_analysis_030420/data/V3V4/V3V4_dada2.Rdata")
 
-sample_df <- read.csv("new_analysis_030420/data/V3V4/V3V4_samples_list.csv", header = TRUE, row.names = "SampleID")
+sample_df <- read.csv("./Primers_comparison/new_analysis_030420/data/V3V4/V3V4_samples_list.csv", header = TRUE, row.names = "SampleID")
 
 
 V3V4_ps <- phyloseq(otu_table(seqtab.nochim2, taxa_are_rows=FALSE), 
@@ -49,14 +49,29 @@ V3V4_ps0 <- subset_taxa(V3V4_ps, !is.na(Phylum) & !Order %in% c("Chloroplast") &
 
 dim(otu_table(V3V4_ps0))[2]/dim(otu_table(V3V4_ps))[2]
 
+#calculate retained reads along the workflow
+dadaFs <- append(dadaFs_hi, dadaFs_mi)
+dadaRs <- append(dadaRs_hi, dadaRs_mi)
+mergers <-  append(mergers_hi, mergers_mi)
+out <- rbind(out_hi,out_mi)
+
+#Track reads through the pipeline
+getN <- function(x) sum(getUniques(x))
+track <- cbind(out, sapply(dadaFs, getN), sapply(dadaRs, getN), sapply(mergers, getN), rowSums(seqtab.nochim), rowSums(seqtab.nochim2))
+# If processing a single sample, remove the sapply calls: e.g. replace sapply(dadaFs, getN) with getN(dadaFs)
+colnames(track) <- c("input", "filtered", "denoisedF", "denoisedR", "merged", "nonchim", "tabled")
+rownames(track) <- sample.names
+
+write.csv(track, file.path("./Primers_comparison/new_analysis_030420/data/V3V4/", "Report","dada2_reads_output.csv"))
+
 
 rm(list=ls()[! ls() %in% c("V3V4_ps0")])
 
 
 #load V4V5 dataset
-load("./new_analysis_030420/data/V4V5/V4V5_dada2.Rdata")
+load("./Primers_comparison/new_analysis_030420/data/V4V5/V4V5_dada2.Rdata")
 
-sample_df <- read.csv("new_analysis_030420/data/V4V5/V4V5_samples_list.csv", header = TRUE, row.names = "SampleID")
+sample_df <- read.csv("./Primers_comparison/new_analysis_030420/data/V4V5/V4V5_samples_list.csv", header = TRUE, row.names = "SampleID")
 
 
 V4V5_ps <- phyloseq(otu_table(seqtab.nochim2, taxa_are_rows=FALSE), 
@@ -88,6 +103,22 @@ V4V5_ps0 <- subset_taxa(V4V5_ps, !is.na(Phylum) & !Order %in% c("Chloroplast") &
 
 dim(otu_table(V4V5_ps0))[2]/dim(otu_table(V4V5_ps))[2]
 
+#calculate retained reads along the workflow
+dadaFs <- append(dadaFs_hi, dadaFs_mi)
+dadaRs <- append(dadaRs_hi, dadaRs_mi)
+mergers <-  append(mergers_hi, mergers_mi)
+out <- rbind(out_hi,out_mi)
+
+#Track reads through the pipeline
+getN <- function(x) sum(getUniques(x))
+track <- cbind(out, sapply(dadaFs, getN), sapply(dadaRs, getN), sapply(mergers, getN), rowSums(seqtab.nochim), rowSums(seqtab.nochim2))
+# If processing a single sample, remove the sapply calls: e.g. replace sapply(dadaFs, getN) with getN(dadaFs)
+colnames(track) <- c("input", "filtered", "denoisedF", "denoisedR", "merged", "nonchim", "tabled")
+rownames(track) <- sample.names
+
+write.csv(track, file.path("./Primers_comparison/new_analysis_030420/data/V4V5/", "Report","dada2_reads_output.csv"))
+
+
 rm(list=ls()[! ls() %in% c("V3V4_ps0","V4V5_ps0")])
 
 
@@ -95,7 +126,7 @@ rm(list=ls()[! ls() %in% c("V3V4_ps0","V4V5_ps0")])
 #Alpha diversity overview table
 ####################################
 #V3V4
-V3V4_reads.tab <- read.csv2("./new_analysis_030420/data/V3V4/dada2_reads_output.csv",
+V3V4_reads.tab <- read.csv2("./Primers_comparison/new_analysis_030420/data/V3V4/Report/dada2_reads_output.csv",
                             header = TRUE, sep = ",", row.names = "X")
 
 row.names(V3V4_reads.tab) <-paste("X",row.names(V3V4_reads.tab), sep ="")
@@ -132,7 +163,7 @@ V3V4_comm.char <- merge(V3V4_meta,V3V4_reads.tab,by =0) %>%
 
 
 #V4V5
-V4V5_reads.tab <- read.csv2("./new_analysis_030420/data/V4V5/dada2_reads_output.csv",
+V4V5_reads.tab <- read.csv2("./Primers_comparison/new_analysis_030420/data/V4V5/Report/dada2_reads_output.csv",
                             header = TRUE, sep = ",", row.names = "X")
 
 row.names(V4V5_reads.tab) <-paste("X",row.names(V4V5_reads.tab), sep ="")
@@ -232,40 +263,31 @@ rare.p <- ggplot(V4V5_ps0.iNEXT.rare, aes(x=x, y=y, shape = site))+
   theme_classic(base_size = 12)+theme(legend.position="none")
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #####################################
-#Preprocess bacterial OTU by prevalence of each taxa
+#Filter ASVs of each taxa by prevalence 
 #####################################
 #in how many samples did each taxa appear at least once
-prev0 <- apply(X = otu_table(V3V4_ps0),
+prev0_V3V4 <- apply(X = otu_table(V3V4_ps0),
               MARGIN = ifelse(taxa_are_rows(V3V4_ps0), yes = 1, no = 2),
               FUN = function(x){sum(x > 0)})
 
 # Add taxonomy and total read counts to this data.frame
-prevdf <- data.frame(Prevalence = prev0,
+prevdf_V3V4 <- data.frame(Prevalence = prev0_V3V4,
                     TotalAbundance = taxa_sums(V3V4_ps0),
-                    tax_table(V3V4_ps0))
+                    tax_table(V3V4_ps0),
+                    Primer = "V3V4")
 
 #explore results
-plyr::ddply(prevdf, "Phylum", function(df1){cbind(mean(df1$Prevalence),sum(df1$Prevalence))})
+prevdf_V3V4_sum <- plyr::ddply(prevdf, "Phylum", function(df1){cbind(Samples=mean(df1$Prevalence),Abundance=sum(df1$TotalAbundance))})%>%
+  arrange(desc(Abundance))%>%
+  mutate(Proportion = 100*Abundance / sum(Abundance))
+
+top_phyla_V3V4 <- prevdf_V3V4_sum$Phylum[prevdf_V3V4_sum$Proportion >1]
 
 #explore visualy 
-ggplot(prevdf, aes(TotalAbundance, Prevalence / nsamples(V3V4_ps0),color=Phylum)) +
+ggplot(prevdf_V3V4[prevdf_V3V4$Phylum %in% top_phyla_V3V4,], aes(TotalAbundance, Prevalence ,color=Phylum)) +
   # Include a guess for parameter
-  geom_hline(yintercept = 0.1, alpha = 0.5, linetype = 2) +
+  geom_hline(yintercept = 3, alpha = 0.5, linetype = 2) +
   geom_vline(xintercept = 100, alpha = 0.5, linetype = 2) +
   geom_point(size = 2, alpha = 0.7) +
   scale_x_log10() +  xlab("Total Abundance") + ylab("Prevalence [Frac. Samples]") +
@@ -275,7 +297,73 @@ ggplot(prevdf, aes(TotalAbundance, Prevalence / nsamples(V3V4_ps0),color=Phylum)
 prevalenceThreshold = 0.1 * nsamples(V3V4_ps0)
 
 # Execute prevalence filter, using `prune_taxa()` function
-V3V4_ps0.prev <-  prune_taxa((prev0 > prevalenceThreshold), V3V4_ps0)
+V3V4_ps0.prev <-  prune_taxa((prev0_V3V4 > prevalenceThreshold), V3V4_ps0)
+
+#V4V5
+#in how many samples did each taxa appear at least once
+prev0_V4V5 <- apply(X = otu_table(V4V5_ps0),
+               MARGIN = ifelse(taxa_are_rows(V4V5_ps0), yes = 1, no = 2),
+               FUN = function(x){sum(x > 0)})
+
+# Add taxonomy and total read counts to this data.frame
+prevdf_V4V5 <- data.frame(Prevalence = prev0_V4V5,
+                     TotalAbundance = taxa_sums(V4V5_ps0),
+                     tax_table(V4V5_ps0),
+                     Primer = "V4V5")
+
+#explore results
+prevdf_V4V5_sum <- plyr::ddply(prevdf_V4V5, "Phylum", function(df1){cbind(Samples=mean(df1$Prevalence),Abundance=sum(df1$TotalAbundance))})%>%
+                arrange(desc(Abundance))%>%
+                mutate(Proportion = 100*Abundance / sum(Abundance))
+
+top_phyla_V4V5 <- prevdf_V4V5_sum$Phylum[prevdf_V4V5_sum$Proportion >1]
+  
+
+prevdf <- rbind(prevdf_V3V4,prevdf_V4V5)
+
+
+#explore visualy 
+ggplot(prevdf[prevdf$Phylum %in% top_phyla_V4V5,], aes(TotalAbundance, Prevalence ,color=Phylum)) +
+  # Include a guess for parameter
+  geom_hline(yintercept = 3, alpha = 0.5, linetype = 2) +
+  geom_vline(xintercept = 100, alpha = 0.5, linetype = 2) +
+  geom_point(size = 2, alpha = 0.7) +
+  scale_x_log10() +  xlab("Total Abundance") + ylab("Prevalence [Frac. Samples]") +
+  facet_wrap(~Phylum+Primer, ncol = 4) + theme(legend.position="none")
+
+# Define prevalence threshold as 10% of total samples
+prevalenceThreshold = 0.1 * nsamples(V4V5_ps0)
+
+# Execute prevalence filter, using `prune_taxa()` function
+V4V5_ps0.prev <-  prune_taxa((prev0_V4V5 > prevalenceThreshold), V4V5_ps0)
+
+
+vegan::adonis(TotalAbundance ~ Phylum , prevdf) 
+
+test <- prevdf[prevdf$Phylum %in% top_phyla_V3V4,]%>% 
+group_by(Primer, Phylum) %>% 
+  summarise(TotalAbundance = list(TotalAbundance))%>% 
+spread(Primer, TotalAbundance) %>% 
+  group_by(Phylum)%>% 
+  mutate(p_value = t.test(unlist("V3V4"), unlist("V4V5"))$p.value,
+         t_value = t.test(unlist("V3V4"), unlist("V4V5"))$statistic)
+
+
+prevdf[prevdf$Phylum %in% top_phyla_V3V4,]%>% 
+  select("TotalAbundance","Phylum","Primer")%>% 
+  gather(key = Phylum, value = TotalAbundance, -Primer) %>%
+  group_by(Primer, TotalAbundance) %>% 
+  summarise(TotalAbundance = list(TotalAbundance)) %>% 
+  spread(Primer, TotalAbundance) %>%
+  group_by(Phylum) %>% 
+  mutate(p_value = t.test(unlist("V3V4"), unlist("V4V5"))$p.value,
+         t_value = t.test(unlist("V3V4"), unlist("V4V5"))$statistic)
+
+
+
+summarise_each(funs(t.test(.[Primer == "V3V4"], .[Primer == "V4V5"])$p.value), vars = Phylum:TotalAbundance)
+
+
 
 #####################################
 #Bar plots

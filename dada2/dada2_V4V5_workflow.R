@@ -76,7 +76,30 @@ out_mi <- filterAndTrim(fnFs_mi, filtFs_mi, fnRs_mi, filtRs_mi, truncLen=c(255,2
 
 write.csv(rbind(out_hi,out_mi), file= file.path("Report","dada2_filterAndTrim_output.csv"))
 
+# quality check
+QualityProfileFs <- list()
+for(i in 1:length(filtFs)) {
+  QualityProfileFs[[i]] <- list()
+  QualityProfileFs[[i]][[1]] <- plotQualityProfile(filtFs[i])
+}
+pdf(file.path("Report","FiltProfileForward.pdf"))
+for(i in 1:length(filtFs)) {
+  do.call("grid.arrange", QualityProfileFs[[i]])  
+}
+dev.off()
+rm(QualityProfileFs)
 
+QualityProfileRs <- list()
+for(i in 1:length(filtRs)) {
+  QualityProfileRs[[i]] <- list()
+  QualityProfileRs[[i]][[1]] <- plotQualityProfile(filtRs[i])
+}
+pdf(file.path("Report","FiltProfileReverse.pdf"))
+for(i in 1:length(filtRs)) {
+  do.call("grid.arrange", QualityProfileRs[[i]])  
+}
+dev.off()
+rm(QualityProfileRs)
 # Learn errors 
 errF_hi <- learnErrors(filtFs_hi, multithread = TRUE)
 errR_hi <- learnErrors(filtRs_hi, multithread = TRUE)
@@ -114,18 +137,18 @@ seqtab<- mergeSequenceTables(table1= makeSequenceTable(mergers_hi), table2 = mak
 save.image(file.path("V4V5_dada2.Rdata"))
 
 #Combine together sequences that are identical 
-seqtab <- collapseNoMismatch(seqtab, verbose = TRUE)
+seqtab1 <- collapseNoMismatch(seqtab, verbose = TRUE)
 
-dim(seqtab)
+dim(seqtab1)
 
 # Inspect distribution of sequence lengths
-table(nchar(getSequences(seqtab)))
+table(nchar(getSequences(seqtab1)))
 
-seqtab.nochim <- removeBimeraDenovo(seqtab, method="consensus", multithread=TRUE, verbose=TRUE)
+seqtab.nochim <- removeBimeraDenovo(seqtab1, method="consensus", multithread=TRUE, verbose=TRUE)
 dim(seqtab.nochim)
 
 #proportion of chimeras
-sum(seqtab.nochim)/sum(seqtab)
+sum(seqtab.nochim)/sum(seqtab1)
 
 # inspect output: remove singletons and 'junk' sequences
 # read lengths modified for V34 amplicons / based upon output table where majority of reads occurs
@@ -133,6 +156,14 @@ seqtab.nochim2 <- seqtab.nochim[, nchar(colnames(seqtab.nochim)) %in% c(370:430)
 dim(seqtab.nochim2)
 summary(rowSums(seqtab.nochim2)/rowSums(seqtab.nochim))
 
+#Track reads through the pipeline
+getN <- function(x) sum(getUniques(x))
+track <- cbind(out, sapply(dadaFs, getN), sapply(dadaRs, getN), sapply(mergers, getN), rowSums(seqtab.nochim), rowSums(seqtab.nochim2))
+# If processing a single sample, remove the sapply calls: e.g. replace sapply(dadaFs, getN) with getN(dadaFs)
+colnames(track) <- c("input", "filtered", "denoisedF", "denoisedR", "merged", "nonchim", "tabled")
+rownames(track) <- sample.names
+
+write.csv(track, file.path(path, "Report","dada2_reads_output.csv"))
 
 #assign taxonomy
 taxa <- assignTaxonomy(seqtab.nochim2, "../tax/silva_nr_v138_train_set.fa.gz", multithread=TRUE, tryRC = TRUE, verbose = TRUE)
