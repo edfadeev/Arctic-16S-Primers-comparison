@@ -53,7 +53,7 @@ names(filtRs) <- sample.names
 #separate the different runs
 #Hiseq
 fnFs_hi<- sort(file.path("Clipped",paste(c(22,23,26,27), "_clip_R1.fastq", sep = "")))
-fnRs_hi<- sort(file.path("Clipped",paste(c(22,23,26,27), "_clip_R1.fastq", sep = ""))) 
+fnRs_hi<- sort(file.path("Clipped",paste(c(22,23,26,27), "_clip_R2.fastq", sep = ""))) 
 filtFs_hi<- sort(file.path("Filtered",paste(c(22,23,26,27), "_F_filt.fastq.gz", sep = "")))
 filtRs_hi<- sort(file.path("Filtered",paste(c(22,23,26,27), "_R_filt.fastq.gz", sep = ""))) 
 #Filter and trim
