@@ -45,6 +45,9 @@ rm(QualityProfileRs)
 # Make directory and filenames for the filtered fastqs
 filt_path <- file.path("Filtered")
 if(!file_test("-d", filt_path)) dir.create(filt_path)
+filt_path <- file.path("Seq.Tables")
+if(!file_test("-d", filt_path)) dir.create(filt_path)
+
 filtFs <- file.path("Filtered", paste0(sample.names, "_F_filt.fastq.gz"))
 filtRs <- file.path("Filtered", paste0(sample.names, "_R_filt.fastq.gz"))
 names(filtFs) <- sample.names
@@ -68,6 +71,10 @@ dadaFs_hi <- dada(filtFs_hi, err=errF_hi, multithread=TRUE)
 dadaRs_hi <- dada(filtRs_hi, err=errR_hi, multithread=TRUE)
 #Merge paired reads
 mergers_hi <- mergePairs(dadaFs_hi, filtFs_hi, dadaRs_hi, filtRs_hi, verbose=TRUE, minOverlap = 10)
+#generate sequence table and save it
+seqtab_hi <- makeSequenceTable(mergers_hi)
+saveRDS(seqtab_hi, file.path("Seq.Tables","seqtab_hi.rds"))
+
 
 #MiSeq 1 - 493:307
 fnFs_mi1 <- sort(file.path("Clipped",paste(c(11,12,14:21), "_clip_R1.fastq", sep = "")))
@@ -86,6 +93,9 @@ dadaFs_mi1 <- dada(filtFs_mi1, err=errF_mi1, multithread=TRUE)
 dadaRs_mi1 <- dada(filtRs_mi1, err=errR_mi1, multithread=TRUE)
 #Merge paired reads
 mergers_mi1 <- mergePairs(dadaFs_mi1, filtFs_mi1, dadaRs_mi1, filtRs_mi1, verbose=TRUE, minOverlap = 10)
+#generate sequence table and save it
+seqtab_mi1 <- makeSequenceTable(mergers_mi1)
+saveRDS(seqtab_mi1, file.path("Seq.Tables","seqtab_mi1.rds"))
 
 #MiSeq 2 - 493:227
 fnFs_mi2 <- sort(file.path("Clipped",paste(c(24,25), "_clip_R1.fastq", sep = "")))
@@ -104,6 +114,9 @@ dadaFs_mi2 <- dada(filtFs_mi2, err=errF_mi2, multithread=TRUE)
 dadaRs_mi2 <- dada(filtRs_mi2, err=errR_mi2, multithread=TRUE)
 #Merge paired reads
 mergers_mi2 <- mergePairs(dadaFs_mi2, filtFs_mi2, dadaRs_mi2, filtRs_mi2, verbose=TRUE, minOverlap = 10)
+#generate sequence table and save it
+seqtab_mi2 <- makeSequenceTable(mergers_mi2)
+saveRDS(seqtab_mi2, file.path("Seq.Tables","seqtab_mi2.rds"))
 
 #MiSeq 3 - 493:291
 fnFs_mi3 <- sort(file.path("Clipped",paste(c(28:31), "_clip_R1.fastq", sep = "")))
@@ -122,6 +135,9 @@ dadaFs_mi3 <- dada(filtFs_mi3, err=errF_mi3, multithread=TRUE)
 dadaRs_mi3 <- dada(filtRs_mi3, err=errR_mi3, multithread=TRUE)
 #Merge paired reads
 mergers_mi3 <- mergePairs(dadaFs_mi3, filtFs_mi3, dadaRs_mi3, filtRs_mi3, verbose=TRUE, minOverlap = 10)
+#generate sequence table and save it
+seqtab_mi3 <- makeSequenceTable(mergers_mi3)
+saveRDS(seqtab_mi3, file.path("Seq.Tables","seqtab_mi3.rds"))
 
 #MiSeq 4 - 493:255
 fnFs_mi4 <- sort(file.path("Clipped",paste(c(1,2,9,13), "_clip_R1.fastq", sep = "")))
@@ -140,6 +156,9 @@ dadaFs_mi4 <- dada(filtFs_mi4, err=errF_mi4, multithread=TRUE)
 dadaRs_mi4 <- dada(filtRs_mi4, err=errR_mi4, multithread=TRUE)
 #Merge paired reads
 mergers_mi4 <- mergePairs(dadaFs_mi4, filtFs_mi4, dadaRs_mi4, filtRs_mi4, verbose=TRUE, minOverlap = 10)
+#generate sequence table and save it
+seqtab_mi4 <- makeSequenceTable(mergers_mi4)
+saveRDS(seqtab_mi4, file.path("Seq.Tables","seqtab_mi4.rds"))
 
 #MiSeq 5 - 493:295
 fnFs_mi5 <- sort(file.path("Clipped",paste(c(32), "_clip_R1.fastq", sep = "")))
@@ -158,6 +177,9 @@ dadaFs_mi5 <- dada(filtFs_mi5, err=errF_mi5, multithread=TRUE)
 dadaRs_mi5 <- dada(filtRs_mi5, err=errR_mi5, multithread=TRUE)
 #Merge paired reads
 mergers_mi5 <- mergePairs(dadaFs_mi5, filtFs_mi5, dadaRs_mi5, filtRs_mi5, verbose=TRUE, minOverlap = 10)
+#generate sequence table and save it
+seqtab_mi5 <- makeSequenceTable(mergers_mi5)
+saveRDS(seqtab_mi5, file.path("Seq.Tables","seqtab_mi5.rds"))
 
 #MiSeq 6 - 493:293
 fnFs_mi6 <- sort(file.path("Clipped",paste(c(33:35), "_clip_R1.fastq", sep = "")))
@@ -176,6 +198,9 @@ dadaFs_mi6 <- dada(filtFs_mi6, err=errF_mi6, multithread=TRUE)
 dadaRs_mi6 <- dada(filtRs_mi6, err=errR_mi6, multithread=TRUE)
 #Merge paired reads
 mergers_mi6 <- mergePairs(dadaFs_mi6, filtFs_mi6, dadaRs_mi6, filtRs_mi6, verbose=TRUE, minOverlap = 10)
+#generate sequence table and save it
+seqtab_mi6 <- makeSequenceTable(mergers_mi1)
+saveRDS(seqtab_mi6, file.path("Seq.Tables","seqtab_mi6.rds"))
 
 #MiSeq 7 - MISEQ:226
 fnFs_mi7 <- sort(file.path("Clipped",paste(c(36,38), "_clip_R1.fastq", sep = "")))
@@ -194,6 +219,9 @@ dadaFs_mi7 <- dada(filtFs_mi7, err=errF_mi7, multithread=TRUE)
 dadaRs_mi7 <- dada(filtRs_mi7, err=errR_mi7, multithread=TRUE)
 #Merge paired reads
 mergers_mi7 <- mergePairs(dadaFs_mi7, filtFs_mi7, dadaRs_mi7, filtRs_mi7, verbose=TRUE, minOverlap = 10)
+#generate sequence table and save it
+seqtab_mi7 <- makeSequenceTable(mergers_mi7)
+saveRDS(seqtab_mi7, file.path("Seq.Tables","seqtab_mi7.rds"))
 
 #MiSeq 8 - MISEQ:221
 fnFs_mi8 <- sort(file.path("Clipped",paste(c(37,39:42), "_clip_R1.fastq", sep = "")))
@@ -212,6 +240,9 @@ dadaFs_mi8 <- dada(filtFs_mi8, err=errF_mi8, multithread=TRUE)
 dadaRs_mi8 <- dada(filtRs_mi8, err=errR_mi8, multithread=TRUE)
 #Merge paired reads
 mergers_mi8 <- mergePairs(dadaFs_mi8, filtFs_mi8, dadaRs_mi8, filtRs_mi8, verbose=TRUE, minOverlap = 10)
+#generate sequence table and save it
+seqtab_mi8 <- makeSequenceTable(mergers_mi8)
+saveRDS(seqtab_mi8, file.path("Seq.Tables","seqtab_mi8.rds"))
 
 #MiSeq 9 - 493:307
 fnFs_mi9 <- sort(file.path("Clipped",paste(c(7,8,10), "_clip_R1.fastq", sep = "")))
@@ -230,6 +261,9 @@ dadaFs_mi9 <- dada(filtFs_mi9, err=errF_mi9, multithread=TRUE)
 dadaRs_mi9 <- dada(filtRs_mi9, err=errR_mi9, multithread=TRUE)
 #Merge paired reads
 mergers_mi9 <- mergePairs(dadaFs_mi9, filtFs_mi9, dadaRs_mi9, filtRs_mi9, verbose=TRUE, minOverlap = 10)
+#generate sequence table and save it
+seqtab_mi9 <- makeSequenceTable(mergers_mi9)
+saveRDS(seqtab_mi9, file.path("Seq.Tables","seqtab_mi9.rds"))
 
 #MiSeq 10 - 493:471
 fnFs_mi10 <- sort(file.path("Clipped",paste(c(3:6), "_clip_R1.fastq", sep = "")))
@@ -248,6 +282,15 @@ dadaFs_mi10 <- dada(filtFs_mi10, err=errF_mi10, multithread=TRUE)
 dadaRs_mi10 <- dada(filtRs_mi10, err=errR_mi10, multithread=TRUE)
 #Merge paired reads
 mergers_mi10 <- mergePairs(dadaFs_mi10, filtFs_mi10, dadaRs_mi10, filtRs_mi10, verbose=TRUE, minOverlap = 10)
+#generate sequence table and save it
+seqtab_mi10 <- makeSequenceTable(mergers_mi10)
+saveRDS(seqtab_mi10, file.path("Seq.Tables","seqtab_mi10.rds"))
+
+
+
+
+
+
 
 ##summary of filtering
 
