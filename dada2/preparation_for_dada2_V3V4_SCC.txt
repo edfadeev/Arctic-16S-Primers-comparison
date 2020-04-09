@@ -90,24 +90,5 @@ mv ./Clipped/*.info ./Clipped/Clipped_logs/
 mv Clipped/*rf* ./Clipped/Clipped_logs/rf/
 
 
-#feed samples into DADA2
-qsub -wd ${FILELOCATION} -o ${FILELOCATION}/Logfiles -e ${FILELOCATION}/Logfiles ../qsubs/dada2_input.qsub
-
-#check the quality plots and adjust the next step accordingly
-#filter low quality 
-qsub -wd ${FILELOCATION} -o ${FILELOCATION}/Logfiles -e ${FILELOCATION}/Logfiles ../qsubs/dada2_filter.qsub
-
-#error corrections
-qsub -wd ${FILELOCATION} -o ${FILELOCATION}/Logfiles -e ${FILELOCATION}/Logfiles ../qsubs/dada2_error_corr.qsub
-
-#merge reads
-qsub -wd ${FILELOCATION} -o ${FILELOCATION}/Logfiles -e ${FILELOCATION}/Logfiles ../qsubs/dada2_merge.qsub
-
-#check in log file length distribution and adjust accordingly in next step 
-
-#remove chimeras and assign taxonomy
-qsub -wd ${FILELOCATION} -o ${FILELOCATION}/Logfiles -e ${FILELOCATION}/Logfiles ../qsubs/dada2_chim.qsub
-
-# assign taxonomy and construct phylogenetic tree
-qsub -wd ${FILELOCATION} -o ${FILELOCATION}/Logfiles -e ${FILELOCATION}/Logfiles ../qsubs/dada2_tax.qsub
-
+#produce sequence table for each run
+qsub -wd ${FILELOCATION} -t 1-11 -o ${FILELOCATION}/Logfiles -e ${FILELOCATION}/Logfiles dada2_V4V5_seqtab.qsub
