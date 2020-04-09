@@ -124,10 +124,10 @@ dadaRs_mi3 <- dada(filtRs_mi3, err=errR_mi3, multithread=TRUE)
 mergers_mi3 <- mergePairs(dadaFs_mi3, filtFs_mi3, dadaRs_mi3, filtRs_mi3, verbose=TRUE, minOverlap = 10)
 
 #MiSeq 4 - 493:255
-fnFs_mi4 <- sort(file.path("Clipped",paste(c(1,2,9), "_clip_R1.fastq", sep = "")))
-fnRs_mi4 <- sort(file.path("Clipped",paste(c(1,2,9), "_clip_R2.fastq", sep = "")))
-filtFs_mi4 <- sort(file.path("Filtered",paste(c(1,2,9), "_F_filt.fastq.gz", sep = "")))
-filtRs_mi4 <- sort(file.path("Filtered",paste(c(1,2,9), "_R_filt.fastq.gz", sep = "")))
+fnFs_mi4 <- sort(file.path("Clipped",paste(c(1,2,9,13), "_clip_R1.fastq", sep = "")))
+fnRs_mi4 <- sort(file.path("Clipped",paste(c(1,2,9,13), "_clip_R2.fastq", sep = "")))
+filtFs_mi4 <- sort(file.path("Filtered",paste(c(1,2,9,13), "_F_filt.fastq.gz", sep = "")))
+filtRs_mi4 <- sort(file.path("Filtered",paste(c(1,2,9,13), "_R_filt.fastq.gz", sep = "")))
 #Filter and trim
 out_mi4 <- filterAndTrim(fnFs_mi4, filtFs_mi4, fnRs_mi4, filtRs_mi4, truncLen=c(255,200),
                          maxN=0, maxEE=c(2,4), truncQ=2, rm.phix=TRUE,
