@@ -91,4 +91,6 @@ mv Clipped/*rf* ./Clipped/Clipped_logs/rf/
 
 
 #produce sequence table for each run
-qsub -wd ${FILELOCATION} -t 1-11 -o ${FILELOCATION}/Logfiles -e ${FILELOCATION}/Logfiles dada2_V4V5_seqtab.qsub
+qsub -wd ${FILELOCATION} -t 1-11 -o ${FILELOCATION}/Logfiles -e ${FILELOCATION}/Logfiles dada2_V3V4_seqtab.qsub
+
+qsub -wd ${FILELOCATION} -o ${FILELOCATION}/Logfiles -e ${FILELOCATION}/Logfiles dada2_V3V4_tax.qsub
