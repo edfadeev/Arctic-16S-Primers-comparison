@@ -1,0 +1,10 @@
+#!/bin/bash -l
+
+#$ -l h_rt=16:00:00   # Specify the hard time limit for the job
+#$ -P npsegre
+#$ -N dd2_sep_run
+#$ -j y
+#$ -V
+#$ -pe omp 12
+
+time Rscript ./dada2_V3V4_workflow_sep_runs.R

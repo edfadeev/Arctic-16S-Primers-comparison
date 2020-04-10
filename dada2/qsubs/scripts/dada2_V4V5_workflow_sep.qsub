@@ -2,9 +2,9 @@
 
 #$ -l h_rt=08:00:00   # Specify the hard time limit for the job
 #$ -P npsegre
-#$ -N dada2_tax        
+#$ -N dd2_sep        
 #$ -j y
 #$ -V
 #$ -pe omp 12
 
-time Rscript ../qsubs/scripts/dada2_tax.R
+time Rscript ./dada2_V4V5_workflow_sep_runs.R

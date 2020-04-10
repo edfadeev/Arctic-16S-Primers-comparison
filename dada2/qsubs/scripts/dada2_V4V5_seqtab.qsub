@@ -1,0 +1,10 @@
+#!/bin/bash -l
+
+#$ -l h_rt=8:00:00   # Specify the hard time limit for the job
+#$ -P npsegre
+#$ -N seqtab        
+#$ -j y
+#$ -V
+#$ -pe omp 8
+
+time Rscript ./scripts/"seqtab_"${SGE_TASK_ID}".R"
