@@ -37,5 +37,5 @@ dadaRs_mi6 <- dada(filtRs_mi6, err=errR_mi6, multithread=TRUE, verbose = TRUE)
 #Merge paired reads
 mergers_mi6 <- mergePairs(dadaFs_mi6, filtFs_mi6, dadaRs_mi6, filtRs_mi6, verbose=TRUE, minOverlap = 10)
 #generate sequence table and save it
-seqtab_mi6 <- makeSequenceTable(mergers_mi1)
+seqtab_mi6 <- makeSequenceTable(mergers_mi6)
 saveRDS(seqtab_mi6, file.path("Seq.Tables","seqtab_mi6.rds"))
