@@ -2,9 +2,9 @@
 
 #$ -l h_rt=23:59:00   # Specify the hard time limit for the job
 #$ -P npsegre
-#$ -N dd2_tax
+#$ -N dada2_sep
 #$ -j y
 #$ -V
 #$ -pe omp 16
 
-time Rscript ./scripts/V3V4_merge_chim_tax.R
+time Rscript ./PrimComp_V3V4_dada2.R

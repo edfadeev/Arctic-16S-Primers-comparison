@@ -1,0 +1,43 @@
+SampleID,sample_title,Primer_set,Type,Depth
+28,PS101/126-Deep-water-depth:1000,V4V5,Deep water,700
+27,PS101/126-Deep-water-depth:600,V4V5,Deep water,600
+26,PS101/126-Surface-water-depth:10,V4V5,Surface water,10
+30,PS101/149-Deep-water-depth:600,V4V5,Deep water,600
+31,PS101/149-Deep-water-depth:750,V4V5,Deep water,750
+29,PS101/149-Surface-water-depth:1.5,V4V5,Surface water,1.5
+33,PS101/172-Deep-water-depth:600,V4V5,Deep water,600
+34,PS101/172-Deep-water-depth:620,V4V5,Deep water,620
+32,PS101/172-Surface-water-depth:1,V4V5,Surface water,1
+36,PS101/175-Deep-water-depth:1000,V4V5,Deep water,1000
+35,PS101/175-Surface-water-depth:10,V4V5,Surface water,10
+24,PS101/97-Deep-water-depth:600,V4V5,Deep water,600
+25,PS101/97-Deep-water-depth:853,V4V5,Deep water,853
+21,PS99/41-Sediment-depth:5000,V4V5,Sediment,2344
+18,PS99/42-Sediment-depth:5000,V4V5,Sediment,2460
+37,PS99/43-Surface-water-depth:10,V4V5,Surface water,10
+38,PS99/43-Surface-water-depth:28,V4V5,Surface water,28
+13,PS99/48-Sea-ice-depth:0,V4V5,Sea ice,0
+23,PS99/48-Sediment-depth:5000,V4V5,Sediment,2604
+14,PS99/51-Sea-ice-depth:0,V4V5,Sea ice,0
+22,PS99/51-Sediment-depth:5000,V4V5,Sediment,1002
+40,PS99/51-Surface-water-depth:13,V4V5,Surface water,13
+39,PS99/51-Surface-water-depth:5,V4V5,Surface water,5
+19,PS99/52-Sediment-depth:5000,V4V5,Sediment,2620
+15,PS99/53-Sea-ice-depth:0,V4V5,Sea ice,0
+20,PS99/53-Sediment-depth:5000,V4V5,Sediment,2604
+17,PS99/57-Sediment-depth:5000,V4V5,Sediment,1540
+16,PS99/59-Sea-ice-depth:0,V4V5,Sea ice,0
+41,PS99/62-Surface-water-depth:10,V4V5,Surface water,10
+42,PS99/62-Surface-water-depth:20,V4V5,Surface water,20
+5,FRAM_1078_Fevi_3_oben_1,V4V5,Sediment trap,280
+6,FRAM_1098_Fevi_3_oben_6,V4V5,Sediment trap,280
+7,FRAM_1122_Fevi_3_oben_12,V4V5,Sediment trap,280
+8,FRAM_1150_Fevi_3_oben_19,V4V5,Sediment trap,280
+9,FRAM_2963_Fevi_32_oben_2,V4V5,Sediment trap,205
+10,FRAM_2987_Fevi_32_oben_8,V4V5,Sediment trap,205
+11,FRAM_2999_Fevi_32_oben_11,V4V5,Sediment trap,205
+12,FRAM_3031_Fevi_32_oben_19,V4V5,Sediment trap,205
+1,FRAM_3435_Fevi_26_unten_1_5,V4V5,Sediment trap,2356
+2,FRAM_3443_Fevi_26_unten_2_5,V4V5,Sediment trap,2356
+3,FRAM_3459_Fevi_26_unten_11_5,V4V5,Sediment trap,2356
+4,FRAM_3467_Fevi_26_unten_12_5,V4V5,Sediment trap,2356

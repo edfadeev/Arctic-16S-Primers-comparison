@@ -61,11 +61,11 @@ out_hi <- filterAndTrim(fnFs_hi, filtFs_hi, fnRs_hi, filtRs_hi,
                         maxN=0, maxEE=c(2,4), truncQ=2, rm.phix=TRUE,
                         compress=TRUE, multithread=TRUE)
 # Learn errors 
-errF_hi <- learnErrors(filtFs_hi, multithread = TRUE)
-errR_hi <- learnErrors(filtRs_hi, multithread = TRUE)
+errF_hi <- learnErrors(filtFs_hi, multithread = TRUE, randomize = TRUE, MAX_CONSIST = 30, verbose = TRUE)
+errR_hi <- learnErrors(filtRs_hi, multithread = TRUE, randomize = TRUE, MAX_CONSIST = 30, verbose = TRUE)
 # Sample Inference 
-dadaFs_hi <- dada(filtFs_hi, err=errF_hi, multithread=TRUE)
-dadaRs_hi <- dada(filtRs_hi, err=errR_hi, multithread=TRUE)
+dadaFs_hi <- dada(filtFs_hi, err=errF_hi, multithread=TRUE, verbose = TRUE)
+dadaRs_hi <- dada(filtRs_hi, err=errR_hi, multithread=TRUE, verbose = TRUE)
 #Merge paired reads
 mergers_hi <- mergePairs(dadaFs_hi, filtFs_hi, dadaRs_hi, filtRs_hi, verbose=TRUE, minOverlap = 10)
 
@@ -79,11 +79,11 @@ out_mi1 <- filterAndTrim(fnFs_mi1, filtFs_mi1, fnRs_mi1, filtRs_mi1, truncLen=c(
                          maxN=0, maxEE=c(2,4), truncQ=2, rm.phix=TRUE,
                          compress=TRUE, multithread=TRUE, verbose = TRUE)
 # Learn errors
-errF_mi1 <- learnErrors(filtFs_mi1, multithread = TRUE)
-errR_mi1 <- learnErrors(filtRs_mi1, multithread = TRUE)
+errF_mi1 <- learnErrors(filtFs_mi1, multithread = TRUE, randomize = TRUE, MAX_CONSIST = 30, verbose = TRUE)
+errR_mi1 <- learnErrors(filtRs_mi1, multithread = TRUE, randomize = TRUE, MAX_CONSIST = 30, verbose = TRUE)
 # Sample Inference 
-dadaFs_mi1 <- dada(filtFs_mi1, err=errF_mi1, multithread=TRUE)
-dadaRs_mi1 <- dada(filtRs_mi1, err=errR_mi1, multithread=TRUE)
+dadaFs_mi1 <- dada(filtFs_mi1, err=errF_mi1, multithread=TRUE, verbose = TRUE)
+dadaRs_mi1 <- dada(filtRs_mi1, err=errR_mi1, multithread=TRUE, verbose = TRUE)
 #Merge paired reads
 mergers_mi1 <- mergePairs(dadaFs_mi1, filtFs_mi1, dadaRs_mi1, filtRs_mi1, verbose=TRUE, minOverlap = 10)
 
@@ -97,29 +97,29 @@ out_mi2 <- filterAndTrim(fnFs_mi2, filtFs_mi2, fnRs_mi2, filtRs_mi2, truncLen=c(
                          maxN=0, maxEE=c(2,4), truncQ=2, rm.phix=TRUE,
                          compress=TRUE, multithread=TRUE, verbose = TRUE)
 # Learn errors
-errF_mi2 <- learnErrors(filtFs_mi2, multithread = TRUE)
-errR_mi2 <- learnErrors(filtRs_mi2, multithread = TRUE)
+errF_mi2 <- learnErrors(filtFs_mi2, multithread = TRUE, randomize = TRUE, MAX_CONSIST = 30, verbose = TRUE)
+errR_mi2 <- learnErrors(filtRs_mi2, multithread = TRUE, randomize = TRUE, MAX_CONSIST = 30, verbose = TRUE)
 # Sample Inference 
-dadaFs_mi2 <- dada(filtFs_mi2, err=errF_mi2, multithread=TRUE)
-dadaRs_mi2 <- dada(filtRs_mi2, err=errR_mi2, multithread=TRUE)
+dadaFs_mi2 <- dada(filtFs_mi2, err=errF_mi2, multithread=TRUE, verbose = TRUE)
+dadaRs_mi2 <- dada(filtRs_mi2, err=errR_mi2, multithread=TRUE, verbose = TRUE)
 #Merge paired reads
 mergers_mi2 <- mergePairs(dadaFs_mi2, filtFs_mi2, dadaRs_mi2, filtRs_mi2, verbose=TRUE, minOverlap = 10)
 
 #MiSeq 3 - MISEQ:364
-fnFs_mi3 <- sort(file.path("Clipped",paste(c(2:4,17:23), "_clip_R1.fastq", sep = "")))
-fnRs_mi3 <- sort(file.path("Clipped",paste(c(2:4,17:23), "_clip_R2.fastq", sep = "")))
-filtFs_mi3 <- sort(file.path("Filtered",paste(c(2:4,17:23), "_F_filt.fastq.gz", sep = "")))
-filtRs_mi3 <- sort(file.path("Filtered",paste(c(2:4,17:23), "_R_filt.fastq.gz", sep = "")))
+fnFs_mi3 <- sort(file.path("Clipped",paste(c(1:4,17:23), "_clip_R1.fastq", sep = "")))
+fnRs_mi3 <- sort(file.path("Clipped",paste(c(1:4,17:23), "_clip_R2.fastq", sep = "")))
+filtFs_mi3 <- sort(file.path("Filtered",paste(c(1:4,17:23), "_F_filt.fastq.gz", sep = "")))
+filtRs_mi3 <- sort(file.path("Filtered",paste(c(1:4,17:23), "_R_filt.fastq.gz", sep = "")))
 #Filter and trim
 out_mi3 <- filterAndTrim(fnFs_mi3, filtFs_mi3, fnRs_mi3, filtRs_mi3, truncLen=c(255,200),
                          maxN=0, maxEE=c(2,4), truncQ=2, rm.phix=TRUE,
                          compress=TRUE, multithread=TRUE, verbose = TRUE)
 # Learn errors
-errF_mi3 <- learnErrors(filtFs_mi3, multithread = TRUE)
-errR_mi3 <- learnErrors(filtRs_mi3, multithread = TRUE)
+errF_mi3 <- learnErrors(filtFs_mi3, multithread = TRUE, randomize = TRUE, MAX_CONSIST = 30, verbose = TRUE)
+errR_mi3 <- learnErrors(filtRs_mi3, multithread = TRUE, randomize = TRUE, MAX_CONSIST = 30, verbose = TRUE)
 # Sample Inference 
-dadaFs_mi3 <- dada(filtFs_mi3, err=errF_mi3, multithread=TRUE)
-dadaRs_mi3 <- dada(filtRs_mi3, err=errR_mi3, multithread=TRUE)
+dadaFs_mi3 <- dada(filtFs_mi3, err=errF_mi3, multithread=TRUE, verbose = TRUE)
+dadaRs_mi3 <- dada(filtRs_mi3, err=errR_mi3, multithread=TRUE, verbose = TRUE)
 #Merge paired reads
 mergers_mi3 <- mergePairs(dadaFs_mi3, filtFs_mi3, dadaRs_mi3, filtRs_mi3, verbose=TRUE, minOverlap = 10)
 
@@ -133,13 +133,15 @@ out_mi4 <- filterAndTrim(fnFs_mi4, filtFs_mi4, fnRs_mi4, filtRs_mi4, truncLen=c(
                          maxN=0, maxEE=c(2,4), truncQ=2, rm.phix=TRUE,
                          compress=TRUE, multithread=TRUE, verbose = TRUE)
 # Learn errors
-errF_mi4 <- learnErrors(filtFs_mi4, multithread = TRUE)
-errR_mi4 <- learnErrors(filtRs_mi4, multithread = TRUE)
+errF_mi4 <- learnErrors(filtFs_mi4, multithread = TRUE, randomize = TRUE, MAX_CONSIST = 30, verbose = TRUE)
+errR_mi4 <- learnErrors(filtRs_mi4, multithread = TRUE, randomize = TRUE, MAX_CONSIST = 30, verbose = TRUE)
 # Sample Inference 
-dadaFs_mi4 <- dada(filtFs_mi4, err=errF_mi4, multithread=TRUE)
-dadaRs_mi4 <- dada(filtRs_mi4, err=errR_mi4, multithread=TRUE)
+dadaFs_mi4 <- dada(filtFs_mi4, err=errF_mi4, multithread=TRUE, verbose = TRUE)
+dadaRs_mi4 <- dada(filtRs_mi4, err=errR_mi4, multithread=TRUE, verbose = TRUE)
 #Merge paired reads
 mergers_mi4 <- mergePairs(dadaFs_mi4, filtFs_mi4, dadaRs_mi4, filtRs_mi4, verbose=TRUE, minOverlap = 10)
+
+save.image("V4V5_dada2_sep_runs.Rdata")
 
 ##summary of filtering
 
@@ -203,6 +205,8 @@ seqtab1 <- collapseNoMismatch(seqtab, verbose = TRUE)
 
 dim(seqtab1)
 
+save.image("V4V5_dada2_sep_runs.Rdata")
+
 # Inspect distribution of sequence lengths
 table(nchar(getSequences(seqtab1)))
 
@@ -218,17 +222,9 @@ seqtab.nochim2 <- seqtab.nochim[, nchar(colnames(seqtab.nochim)) %in% c(370:430)
 dim(seqtab.nochim2)
 summary(rowSums(seqtab.nochim2)/rowSums(seqtab.nochim))
 
-#Track reads through the pipeline
-getN <- function(x) sum(getUniques(x))
-track <- cbind(out, sapply(dadaFs, getN), sapply(dadaRs, getN), sapply(mergers, getN), rowSums(seqtab.nochim), rowSums(seqtab.nochim2))
-# If processing a single sample, remove the sapply calls: e.g. replace sapply(dadaFs, getN) with getN(dadaFs)
-colnames(track) <- c("input", "filtered", "denoisedF", "denoisedR", "merged", "nonchim", "tabled")
-rownames(track) <- sample.names
-
-write.csv(track, file.path(path, "Report","dada2_reads_output.csv"))
-
 #assign taxonomy
 taxa <- assignTaxonomy(seqtab.nochim2, "../tax/silva_nr_v138_train_set.fa.gz", multithread=TRUE, tryRC = TRUE, verbose = TRUE)
 taxa <- addSpecies(taxa, "../tax/silva_species_assignment_v138.fa.gz", tryRC = TRUE, verbose = TRUE)
 
 save.image("V4V5_dada2_sep_runs.Rdata")
+
