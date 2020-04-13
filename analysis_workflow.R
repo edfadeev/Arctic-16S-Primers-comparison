@@ -1,8 +1,8 @@
 #set working directory
-wd <- dirname("D:/Postdoc-Vienna/MPI-projects/Primers_comparison/new_analysis_030420/")
-setwd(wd)
+setwd("D:/Postdoc-Vienna/MPI-projects/")
 
 #load libraries
+library(dada2); packageVersion("dada2")
 library(phyloseq); packageVersion("phyloseq")
 library(Biostrings); packageVersion("Biostrings")
 library(ggplot2); packageVersion("ggplot2")
@@ -15,14 +15,20 @@ theme_set(theme_bw())
 #Import dada2 output into phyloseq
 #####################################
 #load V3V4 dataset
-load("./Primers_comparison/new_analysis_030420/data/V3V4/V3V4_dada2.Rdata")
+load("./Primers_comparison/new_analysis_030420/data/V3V4/V3V4_dada2_sep_runs.Rdata")
 
+#correct sample names in OTU table
+rownames(seqtab.nochim2)<- gsub("_F_filt.fastq.gz","",rownames(seqtab.nochim2))
+
+#load and reorder metada
 sample_df <- read.csv("./Primers_comparison/new_analysis_030420/data/V3V4/V3V4_samples_list.csv", header = TRUE, row.names = "SampleID")
+sample_df <- sample_df[rownames(seqtab.nochim2),]
 
 
+#generate phyloseq object
 V3V4_ps <- phyloseq(otu_table(seqtab.nochim2, taxa_are_rows=FALSE), 
-               sample_data(sample_df), 
-               tax_table(taxa)#, phy_tree(fitGTR$tree)
+                sample_data(sample_df), 
+               tax_table(taxa) #, phy_tree(fitGTR$tree)
                )
 
 #add reference sequence and replace variants with ASVs
@@ -49,30 +55,17 @@ V3V4_ps0 <- subset_taxa(V3V4_ps, !is.na(Phylum) & !Order %in% c("Chloroplast") &
 
 dim(otu_table(V3V4_ps0))[2]/dim(otu_table(V3V4_ps))[2]
 
-#calculate retained reads along the workflow
-dadaFs <- append(dadaFs_hi, dadaFs_mi)
-dadaRs <- append(dadaRs_hi, dadaRs_mi)
-mergers <-  append(mergers_hi, mergers_mi)
-out <- rbind(out_hi,out_mi)
-
-#Track reads through the pipeline
-getN <- function(x) sum(getUniques(x))
-track <- cbind(out, sapply(dadaFs, getN), sapply(dadaRs, getN), sapply(mergers, getN), rowSums(seqtab.nochim), rowSums(seqtab.nochim2))
-# If processing a single sample, remove the sapply calls: e.g. replace sapply(dadaFs, getN) with getN(dadaFs)
-colnames(track) <- c("input", "filtered", "denoisedF", "denoisedR", "merged", "nonchim", "tabled")
-rownames(track) <- sample.names
-
-write.csv(track, file.path("./Primers_comparison/new_analysis_030420/data/V3V4/", "Report","dada2_reads_output.csv"))
-
-
 rm(list=ls()[! ls() %in% c("V3V4_ps0")])
 
 
 #load V4V5 dataset
-load("./Primers_comparison/new_analysis_030420/data/V4V5/V4V5_dada2.Rdata")
+load("./Primers_comparison/new_analysis_030420/data/V4V5/V4V5_dada2_sep_runs.Rdata")
+
+#correct sample names in OTU table
+rownames(seqtab.nochim2)<- gsub("_F_filt.fastq.gz","",rownames(seqtab.nochim2))
 
 sample_df <- read.csv("./Primers_comparison/new_analysis_030420/data/V4V5/V4V5_samples_list.csv", header = TRUE, row.names = "SampleID")
-
+sample_df <- sample_df[rownames(seqtab.nochim2),]
 
 V4V5_ps <- phyloseq(otu_table(seqtab.nochim2, taxa_are_rows=FALSE), 
                     sample_data(sample_df), 
@@ -103,114 +96,14 @@ V4V5_ps0 <- subset_taxa(V4V5_ps, !is.na(Phylum) & !Order %in% c("Chloroplast") &
 
 dim(otu_table(V4V5_ps0))[2]/dim(otu_table(V4V5_ps))[2]
 
-#calculate retained reads along the workflow
-dadaFs <- append(dadaFs_hi, dadaFs_mi)
-dadaRs <- append(dadaRs_hi, dadaRs_mi)
-mergers <-  append(mergers_hi, mergers_mi)
-out <- rbind(out_hi,out_mi)
-
-#Track reads through the pipeline
-getN <- function(x) sum(getUniques(x))
-track <- cbind(out, sapply(dadaFs, getN), sapply(dadaRs, getN), sapply(mergers, getN), rowSums(seqtab.nochim), rowSums(seqtab.nochim2))
-# If processing a single sample, remove the sapply calls: e.g. replace sapply(dadaFs, getN) with getN(dadaFs)
-colnames(track) <- c("input", "filtered", "denoisedF", "denoisedR", "merged", "nonchim", "tabled")
-rownames(track) <- sample.names
-
-write.csv(track, file.path("./Primers_comparison/new_analysis_030420/data/V4V5/", "Report","dada2_reads_output.csv"))
-
-
 rm(list=ls()[! ls() %in% c("V3V4_ps0","V4V5_ps0")])
-
-
-#####################################
-#Alpha diversity overview table
-####################################
-#V3V4
-V3V4_reads.tab <- read.csv2("./Primers_comparison/new_analysis_030420/data/V3V4/Report/dada2_reads_output.csv",
-                            header = TRUE, sep = ",", row.names = "X")
-
-row.names(V3V4_reads.tab) <-paste("X",row.names(V3V4_reads.tab), sep ="")
-
-V3V4_meta <- sample_data(V3V4_ps0)
-row.names(V3V4_meta) <-paste("X",row.names(V3V4_meta), sep ="")
-
-
-V3V4_alpha <- estimate_richness(V3V4_ps0, measures = c("Observed", "Chao1","Shannon", "InvSimpson"))
-V3V4_alpha$Row.names <- row.names(V3V4_alpha)
-
-
-V3V4_comm.char <- merge(V3V4_meta,V3V4_reads.tab,by =0) %>%
-    mutate_if(is.numeric, round, 0) %>%
-      merge(V3V4_alpha, by ="Row.names") %>%
-      mutate_if(is.numeric, round, 1) %>%
-      mutate(Seq.prop = tabled/input) %>%
-      mutate(Seq.prop = round(Seq.prop,2)) %>%
-      select("sample_title","Primer_set","Type","Depth","input","filtered","merged","tabled",
-             "Seq.prop","Observed","Chao1","Shannon","InvSimpson")%>%
-      rename("Sample name" = "sample_title",
-             "Primer set" = "Primer_set",
-             "Microbiome" = "Type",
-             "Sampling depth [m]" = "Depth",
-             "Raw seq." = "input",
-             "Seq. after qual. filt" = "filtered",
-             "Merged seq." = "merged",
-             "Final seq." = "tabled",
-             "Seq. proportions" = "Seq.prop",
-             "Observed ASVs" = "Observed",
-             "Chao1 richness est." = "Chao1",
-             "Shannon Index" = "Shannon",
-             "Inverse Simpson Index" = "InvSimpson")
-
-
-#V4V5
-V4V5_reads.tab <- read.csv2("./Primers_comparison/new_analysis_030420/data/V4V5/Report/dada2_reads_output.csv",
-                            header = TRUE, sep = ",", row.names = "X")
-
-row.names(V4V5_reads.tab) <-paste("X",row.names(V4V5_reads.tab), sep ="")
-
-V4V5_meta <- sample_data(V4V5_ps0)
-row.names(V4V5_meta) <-paste("X",row.names(V4V5_meta), sep ="")
-
-
-V4V5_alpha <- estimate_richness(V4V5_ps0, measures = c("Observed", "Chao1","Shannon", "InvSimpson"))
-V4V5_alpha$Row.names <- row.names(V4V5_alpha)
-
-
-V4V5_comm.char <- merge(V4V5_meta,V4V5_reads.tab,by =0) %>%
-  mutate_if(is.numeric, round, 0) %>%
-  merge(V4V5_alpha, by ="Row.names") %>%
-  mutate_if(is.numeric, round, 1) %>%
-  mutate(Seq.prop = tabled/input) %>%
-  mutate(Seq.prop = round(Seq.prop,2)) %>%
-  select("sample_title","Primer_set","Type","Depth","input","filtered","merged","tabled",
-         "Seq.prop","Observed","Chao1","Shannon","InvSimpson")%>%
-  rename("Sample name" = "sample_title",
-         "Primer set" = "Primer_set",
-         "Microbiome" = "Type",
-         "Sampling depth [m]" = "Depth",
-         "Raw seq." = "input",
-         "Seq. after qual. filt" = "filtered",
-         "Merged seq." = "merged",
-         "Final seq." = "tabled",
-         "Seq. proportions" = "Seq.prop",
-         "Observed ASVs" = "Observed",
-         "Chao1 richness est." = "Chao1",
-         "Shannon Index" = "Shannon",
-         "Inverse Simpson Index" = "InvSimpson")
-
-
-overview_table <- rbind(V3V4_comm.char, V4V5_comm.char)
-
-as.data.frame(as.list(aggregate(`Seq. proportions`~`Primer set`,
-                                overview_table, 
-                                FUN = function(x) c(mean = mean(x), sd = sd(x), count=length(x)))))
 
 
 #####################################
 #Plot rarefaction
 ####################################
 #V3V4
-V3V4_ps0.iNEXT <- iNEXT(as.data.frame(t(otu_table(V3V4_ps0, taxa_are_rows=FALSE))), q=0, datatype="abundance")
+V3V4_ps0.iNEXT <- iNEXT(as.data.frame(t(otu_table(V3V4_ps0, taxa_are_rows=FALSE))), q=0, datatype="abundance", knots = 100)
 
 V3V4_ps0.iNEXT.rare <-fortify(V3V4_ps0.iNEXT, type=1)
 
@@ -252,15 +145,118 @@ V4V5_ps0.iNEXT.rare.point$Primer <- "V4V5"
 iNEXT.rare.line <- rbind(V3V4_ps0.iNEXT.rare.line,V4V5_ps0.iNEXT.rare.line)
 iNEXT.rare.point <- rbind(V3V4_ps0.iNEXT.rare.point,V4V5_ps0.iNEXT.rare.point)
 
-levels(iNEXT.rare.line$Type) <- c("Sea ice", "Water", "Sediment.trap","Sediment")
+iNEXT.rare.line$Type <- factor(iNEXT.rare.line$Type, levels = c("Sea ice", "Water", "Sediment.trap","Sediment"))
+iNEXT.rare.point$Type <- factor(iNEXT.rare.point$Type, levels = c("Sea ice", "Water", "Sediment.trap","Sediment"))
 
-rare.p <- ggplot(V4V5_ps0.iNEXT.rare, aes(x=x, y=y, shape = site))+
+rare.p <- ggplot(iNEXT.rare.line, aes(x=x, y=y, shape = site))+
   geom_line(aes(linetype = method, colour = Primer), lwd = 0.5, data= iNEXT.rare.line)+
   geom_point(shape = 21, size =3, colour = "black", data= iNEXT.rare.point)+
   labs(x = "Sample size", y = "Species richness")+
-  xlim(0,2e5)+
-  facet_wrap(Type~Primer, ncol = 2,scales = "free")+
-  theme_classic(base_size = 12)+theme(legend.position="none")
+  xlim(0,3e5)+
+  theme_classic(base_size = 12)+theme(legend.position="none")+
+  facet_grid(Type~Primer, scales = "free",as.table = TRUE)+
+  geom_hline(aes(yintercept=-Inf)) + 
+  geom_vline(aes(xintercept=-Inf)) + 
+  coord_cartesian(clip="off")
+
+
+
+#####################################
+#Alpha diversity overview table
+####################################
+#V3V4
+#raw reads
+V3V4_reads.tab <- read.csv2("./Primers_comparison/new_analysis_030420/data/V3V4/raw_reads.csv",
+                            header = TRUE, sep = ",", row.names = "X")
+
+row.names(V3V4_reads.tab) <-paste("X",row.names(V3V4_reads.tab), sep ="")
+
+V3V4_meta <- sample_data(V3V4_ps0)
+row.names(V3V4_meta) <-paste("X",row.names(V3V4_meta), sep ="")
+
+#alpha div indeces
+V3V4_alpha <- estimate_richness(V3V4_ps0, measures = c("Observed", "Chao1","Shannon", "InvSimpson"))
+V3V4_alpha$tabled <-sample_sums(V3V4_ps0)
+V3V4_alpha$Row.names <- row.names(V3V4_alpha)
+
+shapiro.test(V3V4_alpha$InvSimpson)
+
+
+#Chao1 completness 
+Chao1_V3V4 <-  V3V4_ps0.iNEXT$DataInfo
+Chao1_V3V4$Row.names <-paste("X",Chao1_V3V4$site, sep ="")
+
+V3V4_comm.char <- merge(V3V4_meta,V3V4_reads.tab,by =0) %>%
+  mutate_if(is.numeric, round, 0) %>%
+  merge(Chao1_V3V4,by ="Row.names")%>%
+  merge(V3V4_alpha, by ="Row.names") %>%
+  mutate_if(is.numeric, round, 2) %>%
+  mutate(Seq.prop = tabled/input) %>%
+  mutate(Seq.prop = round(Seq.prop,2)) %>%
+  select("sample_title","Primer_set","Type","Depth","input","tabled",
+         "Seq.prop","Observed","Chao1","SC","Shannon","InvSimpson")%>%
+  rename("Sample name" = "sample_title",
+         "Primer set" = "Primer_set",
+         "Microbiome" = "Type",
+         "Sampling depth [m]" = "Depth",
+         "Raw seq." = "input",
+         "Final seq." = "tabled",
+         "Seq. proportions" = "Seq.prop",
+         "Observed ASVs" = "Observed",
+         "Chao1 richness est." = "Chao1",
+         "Chao1 completness" = "SC",
+         "Shannon Index" = "Shannon",
+         "Inverse Simpson Index" = "InvSimpson")
+
+
+#V4V5
+V4V5_reads.tab <- read.csv2("./Primers_comparison/new_analysis_030420/data/V4V5/raw_reads.csv",
+                            header = TRUE, sep = ",", row.names = "X")
+
+V4V5_reads.tab$Row.names <-paste("X",row.names(V4V5_reads.tab), sep ="") 
+
+V4V5_meta <- sample_data(V4V5_ps0)
+V4V5_meta$Row.names <-paste("X",row.names(V4V5_meta), sep ="")
+
+
+V4V5_alpha <- estimate_richness(V4V5_ps0, measures = c("Observed", "Chao1","Shannon", "InvSimpson"))
+V4V5_alpha$tabled <-sample_sums(V4V5_ps0)
+V4V5_alpha$Row.names <- row.names(V4V5_alpha)
+
+#Chao1 completness 
+Chao1_V4V5 <-  V4V5_ps0.iNEXT$DataInfo
+Chao1_V4V5$Row.names <-paste("X",Chao1_V4V5$site, sep ="")
+
+V4V5_comm.char <- left_join(V4V5_meta,V4V5_reads.tab,by ="Row.names") %>%
+  mutate_if(is.numeric, round, 0) %>%
+  merge(Chao1_V4V5,by ="Row.names")%>%
+  merge(V4V5_alpha, by ="Row.names") %>%
+  mutate_if(is.numeric, round, 1) %>%
+  mutate(Seq.prop = tabled/input) %>%
+  mutate(Seq.prop = round(Seq.prop,2)) %>%
+  select("sample_title","Primer_set","Type","Depth","input","tabled",
+         "Seq.prop","Observed","Chao1","SC","Shannon","InvSimpson")%>%
+  rename("Sample name" = "sample_title",
+         "Primer set" = "Primer_set",
+         "Microbiome" = "Type",
+         "Sampling depth [m]" = "Depth",
+         "Raw seq." = "input",
+         "Final seq." = "tabled",
+         "Seq. proportions" = "Seq.prop",
+         "Observed ASVs" = "Observed",
+         "Chao1 richness est." = "Chao1",
+         "Chao1 completness" = "SC",
+         "Shannon Index" = "Shannon",
+         "Inverse Simpson Index" = "InvSimpson")
+
+
+overview_table <- rbind(V3V4_comm.char, V4V5_comm.char)
+
+as.data.frame(as.list(aggregate(`Seq. proportions`~`Primer set`,
+                                overview_table, 
+                                FUN = function(x) c(mean = mean(x), sd = sd(x), count=length(x)))))
+
+
 
 
 #####################################
@@ -278,7 +274,7 @@ prevdf_V3V4 <- data.frame(Prevalence = prev0_V3V4,
                     Primer = "V3V4")
 
 #explore results
-prevdf_V3V4_sum <- plyr::ddply(prevdf, "Phylum", function(df1){cbind(Samples=mean(df1$Prevalence),Abundance=sum(df1$TotalAbundance))})%>%
+prevdf_V3V4_sum <- plyr::ddply(prevdf_V3V4, "Phylum", function(df1){cbind(Samples=mean(df1$Prevalence),Abundance=sum(df1$TotalAbundance))})%>%
   arrange(desc(Abundance))%>%
   mutate(Proportion = 100*Abundance / sum(Abundance))
 
@@ -370,10 +366,10 @@ summarise_each(funs(t.test(.[Primer == "V3V4"], .[Primer == "V4V5"])$p.value), v
 #####################################
 
 
-top50 <- names(sort(taxa_sums(V3V4_ps0.prev), decreasing=TRUE))[1:100]
-V3V4_ps0.prop <- transform_sample_counts(V3V4_ps0.prev, function(otu) otu/sum(otu))
+top50 <- names(sort(taxa_sums(V3V4_ps0), decreasing=TRUE))[1:100]
+V3V4_ps0.prop <- transform_sample_counts(V3V4_ps0, function(otu) otu/sum(otu))
 ps.top50 <- prune_taxa(top50, V3V4_ps0.prop)
-plot_bar(ps.top50,  fill="Class") + facet_wrap(~environmental.package, scales="free_x")
+plot_bar(ps.top50,  fill="Phylum") + facet_wrap(~Type, scales="free_x")
 
 
 ord.nmds.bray <- ordinate(V3V4_ps0.prop, method="NMDS", distance="bray")
@@ -443,12 +439,38 @@ V4V5_ps0.prev <-  prune_taxa((prev0 > prevalenceThreshold), V4V5_ps0)
 #####################################
 
 
-top50 <- names(sort(taxa_sums(V4V5_ps0.prev), decreasing=TRUE))[1:100]
-V4V5_ps0.prop <- transform_sample_counts(V4V5_ps0.prev, function(otu) otu/sum(otu))
+top50 <- names(sort(taxa_sums(V4V5_ps0), decreasing=TRUE))[1:100]
+
 ps.top50 <- prune_taxa(top50, V4V5_ps0.prop)
 plot_bar(ps.top50,  fill="Class") + facet_wrap(~environmental.package, scales="free_x")
 
 
-ord.nmds.bray <- ordinate(V4V5_ps0.prop, method="NMDS", distance="bray")
 
-plot_ordination(V4V5_ps0.prop, ord.nmds.bray, label = "geographic.location..depth.", shape="environmental.package", title="Bray NMDS")+ geom_point(size = 5)
+
+V4V5_ps0.prop <- transform_sample_counts(V4V5_ps0, function(otu) otu/sum(otu))
+ord.nmds.bray <- ordinate(V4V5_ps0.prop, method="RDA", distance="bray")
+plot_ordination(V4V5_ps0.prop, ord.nmds.bray, label = "Depth", color = "Type", title="Bray NMDS")+ geom_point(size = 4)+
+  stat_ellipse()
+
+V3V4_ps0.prop <- transform_sample_counts(V3V4_ps0, function(otu) otu/sum(otu))
+ord.nmds.bray <- ordinate(V3V4_ps0.prop, method="PCA", distance="bray")
+plot_ordination(V3V4_ps0.prop, ord.nmds.bray, label = "Depth", color = "Type", title="Bray NMDS")+ geom_point(size = 4)+
+  stat_ellipse()
+
+
+set.seed(1234)
+V3V4_ps0.prop.jsd_slv <- ordinate(V3V4_ps0.prop, method = "NMDS", 
+                             distance = "jsd")
+stressplot(V3V4_ps0.prop.jsd_slv)
+
+plot_ordination(V3V4_ps0.prop, V3V4_ps0.prop.jsd_slv, label = "Depth", color = "Type")+
+  stat_ellipse(type="t")+coord_fixed()
+
+
+V4V5_ps0.prop <- transform_sample_counts(V4V5_ps0, function(otu) otu/sum(otu))
+V4V5_ps0.prop.jsd_slv <- ordinate(V4V5_ps0.prop, method = "NMDS", 
+                                  distance = "jsd")
+stressplot(V4V5_ps0.prop.jsd_slv)
+
+plot_ordination(V4V5_ps0.prop, V4V5_ps0.prop.jsd_slv, label = "Depth", color = "Type")+
+  stat_ellipse(type="t")+coord_fixed()
