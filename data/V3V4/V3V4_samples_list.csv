@@ -1,0 +1,38 @@
+SampleID,sample_title,Primer_set,Type,Depth,Overlap_ID,FISH,Seq_lane
+1,PS99/48-Sea-ice-depth_0,V3V4,Sea ice,0,PS99/48_0m,,MiSeq_493:255
+2,PS99/51-Sea-ice-depth_0,V3V4,Sea ice,0,PS99/51_0m,yes,MiSeq_493:255
+3,FRAM_3435_Fevi_26_unten_1_5,V3V4,Sediment trap,2356,Jul2012_2356m,,MiSeq_493:471
+4,FRAM_3443_Fevi_26_unten_2_5,V3V4,Sediment trap,2356,Aug2012_2356m,,MiSeq_493:471
+5,FRAM_3459_Fevi_26_unten_11_5,V3V4,Sediment trap,2356,Feb2013_2356m,,MiSeq_493:471
+6,FRAM_3467_Fevi_26_unten_12_5,V3V4,Sediment trap,2356,Mar2013_2356m,,MiSeq_493:471
+7,PS101/97-Deep-water-depth_600,V3V4,Deep water,600,PS101/97_600m,,MiSeq_493:307
+8,PS101/97-Deep-water-depth_853,V3V4,Deep water,853,PS101/97_853m,yes,MiSeq_493:307
+9,PS99/53-Sea-ice-depth_0,V3V4,Sea ice,0,PS99/53_0m,,MiSeq_493:307
+10,PS101/126-Surface-water-depth_10,V3V4,Surface water,10,PS101/126_10m,,MiSeq_493:255
+11,PS101/126-Deep-water-depth_600,V3V4,Deep water,600,PS101/126_600m,,MiSeq_493:307
+12,PS101/126-Deep-water-depth_1000,V3V4,Deep water,700,PS101/126_700m,,MiSeq_493:307
+13,PS99/59-Sea-ice-depth_0,V3V4,Sea ice,0,PS99/59_0m,yes,MiSeq_493:255
+14,PS101/149-Surface-water-depth_1.5,V3V4,Surface water,1.5,PS101/149_1.5m,,MiSeq_493:307
+15,PS101/149-Deep-water-depth_600,V3V4,Deep water,600,PS101/149_600m,,MiSeq_493:307
+16,PS101/149-Deep-water-depth_750,V3V4,Deep water,750,PS101/149_750m,,MiSeq_493:307
+17,PS101/172-Surface-water-depth_1,V3V4,Surface water,1,PS101/172_1m,,MiSeq_493:307
+18,PS101/172-Deep-water-depth_600,V3V4,Deep water,600,PS101/172_600m,,MiSeq_493:307
+19,PS101/172-Deep-water-depth_620,V3V4,Deep water,620,PS101/172_620m,,MiSeq_493:307
+20,PS101/175-Surface-water-depth_10,V3V4,Surface water,10,PS101/175_10m,,MiSeq_493:307
+21,PS101/175-Deep-water-depth_1000,V3V4,Deep water,1000,PS101/175_1000m,yes,MiSeq_493:307
+22,FRAM_2987_Fevi_32_oben_8,V3V4,Sediment trap,205,Nov2015_205m,,MiSeq_493:293
+23,FRAM_2999_Fevi_32_oben_11,V3V4,Sediment trap,205,Feb2016_205m,,MiSeq_493:293
+24,FRAM_3031_Fevi_32_oben_19,V3V4,Sediment trap,205,Jun2016_205m,,MiSeq_493:293
+25,PS99/48-Sediment-depth_5000,V3V4,Sediment,2604,PS99/48_2604m,,MiSeq_MISEQ:226
+26,PS99/51-Sediment-depth_5000,V3V4,Sediment,1002,PS99/51_1002m,,MiSeq_MISEQ:221
+27,PS99/57-Sediment-depth_5000,V3V4,Sediment,1540,PS99/57_1540m,,MiSeq_MISEQ:226
+28,PS99/42-Sediment-depth_5000,V3V4,Sediment,2460,PS99/42_2460m,,MiSeq_MISEQ:221
+29,PS99/52-Sediment-depth_5000,V3V4,Sediment,2620,PS99/52_2620m,,MiSeq_MISEQ:221
+30,PS99/53-Sediment-depth_5000,V3V4,Sediment,2604,PS99/53_2604m,,MiSeq_MISEQ:221
+31,PS99/48-Surface-water-depth_28_FL,V3V4,Surface water,28,PS99/48_28m_FL,,
+32,PS99/48-Surface-water-depth_28_PA,V3V4,Surface water,28,PS99/48_28m_PA,,
+33,PS99/59-Surface-water-depth_28_FL,V3V4,Surface water,5,PS99/59_28m_FL,,
+34,PS99/59-Surface-water-depth_28_PA,V3V4,Surface water,13,PS99/59_28m_PA,,
+35,PS99/66-Surface-water-depth_28_FL,V3V4,Surface water,10,PS99/66_28m_FL,,
+36,PS99/66-Surface-water-depth_28_PA,V3V4,Surface water,20,PS99/66_28m_PA,,
+37,PS99/41-Sediment-depth_5000,V3V4,Sediment,2344,PS99/41_2344m,,MiSeq_MISEQ:221
