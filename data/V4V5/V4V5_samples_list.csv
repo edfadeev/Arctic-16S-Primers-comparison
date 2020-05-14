@@ -30,10 +30,9 @@ SampleID,sample_title,Primer_set,Type,Depth,Overlap_ID,,FISH,Seq_lane
 29,PS101/172-Deep-water-depth:620,V4V5,Deep water,620,PS101/172_620m,,yes,MiSeq_493:307
 30,PS101/175-Surface-water-depth:10,V4V5,Surface water,10,PS101/175_10m,,,MiSeq_493:307
 31,PS101/175-Deep-water-depth:1000,V4V5,Deep water,1000,PS101/175_1000m,,,MiSeq_493:307
-32,PS99/48-Surface-water-depth_28_FL,V3V4,Surface water,28,PS99/48_28m_FL,,,HiSeq
-33,PS99/48-Surface-water-depth_28_PA,V3V4,Surface water,28,PS99/48_28m_PA,,,HiSeq
-34,PS99/59-Surface-water-depth_28_FL,V3V4,Surface water,5,PS99/59_28m_FL,,,HiSeq
-35,PS99/59-Surface-water-depth_28_PA,V3V4,Surface water,13,PS99/59_28m_PA,,,HiSeq
-36,PS99/66-Surface-water-depth_28_FL,V3V4,Surface water,10,PS99/66_28m_FL,,,HiSeq
-37,PS99/66-Surface-water-depth_28_PA,V3V4,Surface water,20,PS99/66_28m_PA,,,HiSeq
-,,,,,,,,
+32,PS99/48-Surface-water-depth_28_FL,V4V5,Surface water,28,PS99/48_28m_FL,,,HiSeq
+33,PS99/48-Surface-water-depth_28_PA,V4V5,Surface water,28,PS99/48_28m_PA,,,HiSeq
+34,PS99/59-Surface-water-depth_28_FL,V4V5,Surface water,5,PS99/59_28m_FL,,,HiSeq
+35,PS99/59-Surface-water-depth_28_PA,V4V5,Surface water,13,PS99/59_28m_PA,,,HiSeq
+36,PS99/66-Surface-water-depth_28_FL,V4V5,Surface water,10,PS99/66_28m_FL,,,HiSeq
+37,PS99/66-Surface-water-depth_28_PA,V4V5,Surface water,20,PS99/66_28m_PA,,,HiSeq
