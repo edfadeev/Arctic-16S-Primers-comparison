@@ -228,3 +228,45 @@ taxa <- addSpecies(taxa, "../tax/silva_species_assignment_v138.fa.gz", tryRC = T
 
 save.image("V4V5_dada2_sep_runs.Rdata")
 
+# get summary tables 
+sample.order <- names(c(dadaFs_mi1,dadaFs_mi2,dadaFs_mi3,dadaFs_mi4,dadaFs_hi))
+
+getN <- function(x) sum(getUniques(x))
+track <- cbind(rbind(out_mi1,out_mi2,out_mi3,out_mi4,out_hi), 
+               sapply(c(dadaFs_mi1,dadaFs_mi2,dadaFs_mi3,dadaFs_mi4,dadaFs_hi), getN),
+               sapply(c(mergers_mi1,mergers_mi2,mergers_mi3,mergers_mi4,mergers_hi), getN),
+               rowSums(seqtab.nochim[sample.order,]),
+               rowSums(seqtab.nochim2[sample.order,]))
+colnames(track) <- c("input", "filtered", "denoised", "merged", "nochim", "tabled")
+rownames(track) <- gsub("_F_filt.fastq.gz","",sample.order)
+track <- data.frame(track)
+
+#add unclassified levels of taxonomy 
+TAX <- taxa
+k <- ncol(TAX) - 1
+for (i in 2:k) {
+  if (sum(is.na(TAX[, i])) > 1) {
+    test <- TAX[is.na(TAX[, i]), ]
+    for (j in 1:nrow(test)) {
+      if (sum(is.na(test[j, i:(k + 1)])) == length(test[j, i:(k + 1)])) {
+        test[j, i] <- paste(test[j, (i - 1)], "_uncl", sep = "")
+        test[j, (i + 1):(k + 1)] <- test[j, i]
+      }
+    }
+    TAX[is.na(TAX[, i]), ] <- test
+  }
+  if (sum(is.na(TAX[, i])) == 1) {
+    test <- TAX[is.na(TAX[, i]), ]
+    if (sum(is.na(test[i:(k + 1)])) == length(test[i:(k + 1)])) {
+      test[i] <- paste(test[(i - 1)], "_uncl", sep = "")
+      test[(i + 1):(k + 1)] <- test[i]
+    }
+    TAX[is.na(TAX[, i]),] <- test
+  }
+}
+TAX[is.na(TAX[, (k + 1)]), (k + 1)] <- paste(TAX[is.na(TAX[, (k + 1)]), k], "_uncl", sep = "")
+
+# write output
+write.table(t(seqtab.nochim2), "dada2/dada2_seqtab_nochim2.txt", quote = F, sep = "\t")
+write.table(TAX, "dada2/dada2_taxonomy_table.txt", sep = "\t", quote = F)
+write.table(track, "dada2/libs_summary_table.txt", sep = "\t", quote = F)

@@ -177,6 +177,13 @@ dadaFs_mi5 <- dada(filtFs_mi5, err=errF_mi5, multithread=TRUE, verbose = TRUE)
 dadaRs_mi5 <- dada(filtRs_mi5, err=errR_mi5, multithread=TRUE, verbose = TRUE)
 #Merge paired reads
 mergers_mi5 <- mergePairs(dadaFs_mi5, filtFs_mi5, dadaRs_mi5, filtRs_mi5, verbose=TRUE, minOverlap = 10)
+
+#because there is only one sample, the daraframe are transformed to lists for further analysis
+dadaFs_mi5<- list(dadaFs_mi5)
+names(dadaFs_mi5)<- "32_F_filt.fastq.gz"
+mergers_mi5<- list(dadaFs_mi5)
+names(mergers_mi5)<- "32_F_filt.fastq.gz"
+
 #generate sequence table and save it
 seqtab_mi5 <- makeSequenceTable(mergers_mi5)
 saveRDS(seqtab_mi5, file.path("Seq.Tables","seqtab_mi5.rds"))
@@ -385,9 +392,59 @@ seqtab.nochim2 <- seqtab.nochim[, nchar(colnames(seqtab.nochim)) %in% c(370:430)
 dim(seqtab.nochim2)
 summary(rowSums(seqtab.nochim2)/rowSums(seqtab.nochim))
 
+#correct sample name in the table
+rownames(seqtab.nochim)[25]<- "32_F_filt.fastq.gz"
+rownames(seqtab.nochim2)[25]<- "32_F_filt.fastq.gz"
+
 #assign taxonomy
 taxa <- assignTaxonomy(seqtab.nochim2, "../tax/silva_nr_v138_train_set.fa.gz", multithread=TRUE, tryRC = TRUE, verbose = TRUE)
 taxa <- addSpecies(taxa, "../tax/silva_species_assignment_v138.fa.gz", tryRC = TRUE, verbose = TRUE)
 
 save.image("V3V4_dada2_sep_runs.Rdata")
 
+# get summary tables 
+sample.order <- names(c(dadaFs_mi1,dadaFs_mi2,dadaFs_mi3,dadaFs_mi4,dadaFs_mi5,
+                        dadaFs_mi6,dadaFs_mi7,dadaFs_mi8,dadaFs_mi9,dadaFs_mi10,dadaFs_hi))
+
+getN <- function(x) sum(getUniques(x))
+track <- cbind(rbind(out_mi1,out_mi2,out_mi3,out_mi4,out_mi5,
+                     out_mi6,out_mi7,out_mi8,out_mi9,out_mi10,out_hi), 
+               sapply(c(dadaFs_mi1,dadaFs_mi2,dadaFs_mi3,dadaFs_mi4,dadaFs_mi5,
+                        dadaFs_mi6,dadaFs_mi7,dadaFs_mi8,dadaFs_mi9,dadaFs_mi10,dadaFs_hi), getN),
+               sapply(c(mergers_mi1,mergers_mi2,mergers_mi3,mergers_mi4,mergers_mi5,
+                        mergers_mi6,mergers_mi7,mergers_mi8,mergers_mi8,mergers_mi10,mergers_hi), getN),
+               rowSums(seqtab.nochim[sample.order,]),
+               rowSums(seqtab.nochim2[sample.order,]))
+colnames(track) <- c("input", "filtered", "denoised", "merged", "nochim", "tabled")
+rownames(track) <- gsub("_F_filt.fastq.gz","",sample.order)
+track <- data.frame(track)
+
+#add unclassified levels of taxonomy 
+TAX <- taxa
+k <- ncol(TAX) - 1
+for (i in 2:k) {
+  if (sum(is.na(TAX[, i])) > 1) {
+    test <- TAX[is.na(TAX[, i]), ]
+    for (j in 1:nrow(test)) {
+      if (sum(is.na(test[j, i:(k + 1)])) == length(test[j, i:(k + 1)])) {
+        test[j, i] <- paste(test[j, (i - 1)], "_uncl", sep = "")
+        test[j, (i + 1):(k + 1)] <- test[j, i]
+      }
+    }
+    TAX[is.na(TAX[, i]), ] <- test
+  }
+  if (sum(is.na(TAX[, i])) == 1) {
+    test <- TAX[is.na(TAX[, i]), ]
+    if (sum(is.na(test[i:(k + 1)])) == length(test[i:(k + 1)])) {
+      test[i] <- paste(test[(i - 1)], "_uncl", sep = "")
+      test[(i + 1):(k + 1)] <- test[i]
+    }
+    TAX[is.na(TAX[, i]),] <- test
+  }
+}
+TAX[is.na(TAX[, (k + 1)]), (k + 1)] <- paste(TAX[is.na(TAX[, (k + 1)]), k], "_uncl", sep = "")
+
+# write output
+write.table(t(seqtab.nochim2), "dada2/dada2_seqtab_nochim2.txt", quote = F, sep = "\t")
+write.table(TAX, "dada2/dada2_taxonomy_table.txt", sep = "\t", quote = F)
+write.table(track, "dada2/libs_summary_table.txt", sep = "\t", quote = F)
