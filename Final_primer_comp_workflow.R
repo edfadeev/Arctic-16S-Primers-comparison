@@ -20,7 +20,7 @@ give.n <- function(x){
 }
 
 #load colour pallette
-source("scripts/colours.R")
+source("./scripts/colours.R")
 
 #####################################
 #Import dada2 output into phyloseq
@@ -153,6 +153,26 @@ mean_chao1<- summary_table %>%
   group_by(Type, Primer_set)%>%
   summarise(Chao1_mean = mean(Chao1))
 
+#####################################
+#compare richness of Bacteria and Archaea separately in Deep water
+#####################################
+#V3V4
+V3V4_ps_bac <- subset_samples(V3V4_ps, Type %in% c("Deep water"))
+V3V4_ps_bac <- subset_taxa(V3V4_ps_bac, Kingdom %in% c("Bacteria"))
+V3V4_ps_bac<- prune_taxa(taxa_sums(V3V4_ps_bac)>0,V3V4_ps_bac)
+
+V3V4_ps_Sed <- subset_samples(V3V4_ps, Type %in% c("Sediment"))
+V3V4_ps_Sed <- subset_taxa(V3V4_ps_Sed, Kingdom %in% c("Bacteria"))
+V3V4_ps_Sed<- prune_taxa(taxa_sums(V3V4_ps_Sed)>0,V3V4_ps_Sed)
+#V4V5
+V4V5_ps_bac <- subset_samples(V4V5_ps, Type %in% c("Deep water"))
+V4V5_ps_bac <- subset_taxa(V4V5_ps_bac, Kingdom %in% c("Bacteria"))
+V4V5_ps_bac<- prune_taxa(taxa_sums(V4V5_ps_bac)>0,V4V5_ps_bac)
+
+V4V5_ps_Sed <- subset_samples(V4V5_ps, Type %in% c("Sediment"))
+V4V5_ps_Sed <- subset_taxa(V4V5_ps_Sed, Kingdom %in% c("Bacteria"))
+V4V5_ps_Sed<- prune_taxa(taxa_sums(V4V5_ps_Sed)>0,V4V5_ps_Sed)
+
 
 #####################################
 #Plot rarefaction
@@ -203,6 +223,9 @@ rare.p <- ggplot(iNEXT.rare.line, aes(x=x, y=y, shape = site))+
 
 
 ggsave("Figures/rarefactions.pdf", rare.p)
+
+
+
 
 #####################################
 # Plot community composition
