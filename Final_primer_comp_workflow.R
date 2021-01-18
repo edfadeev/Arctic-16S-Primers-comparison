@@ -1,5 +1,5 @@
 #load libraries
-library(dada2); packageVersion("dada2")
+#library(dada2); packageVersion("dada2")
 library(phyloseq); packageVersion("phyloseq")
 library(Biostrings); packageVersion("Biostrings")
 library(ggplot2); packageVersion("ggplot2")
@@ -100,13 +100,15 @@ ps_uncl <- as(sample_sums(subset_taxa(phy_obj, Phylum %in% c("Bacteria_uncl","Ar
 ps_chl <- as(sample_sums(subset_taxa(phy_obj, Order %in% c("Chloroplast"))),"vector")
 ps_mit <- as(sample_sums(subset_taxa(phy_obj, Family %in% c("Mitochondria"))),"vector")
 
-pruned_seq_sums <- data.frame(Eukaryota = ps_euk, Phyl_uncl = ps_uncl,
-                              Chloroplast = ps_chl,Mitochondria = ps_mit)
-
-pruned_seq_sums$Row.names <- rownames(pruned_seq_sums)
 
 #remove unclassified on phylum level, chloroplast and Mitochondrial sequence variants
 phy_obj0 <- subset_taxa(phy_obj, !Kingdom %in% c("Eukaryota") &!Phylum %in% c("Bacteria_uncl","Archaea_uncl","NA_uncl") & !Order %in% c("Chloroplast") & !Family %in% c("Mitochondria") )
+ps_final <- as(sample_sums(phy_obj0),"vector")
+
+pruned_seq_sums <- data.frame(Eukaryota = ps_euk, Phyl_uncl = ps_uncl,
+                              Chloroplast = ps_chl,Mitochondria = ps_mit, Final = ps_final)
+
+pruned_seq_sums$Row.names <- rownames(pruned_seq_sums)
 
 #alpha diversity indexes
 ps0_alpha <- estimate_richness(phy_obj0, measures = c("Observed", "Chao1","Shannon", "InvSimpson"))
@@ -117,13 +119,13 @@ ps0_summary_table <- merge(meta,reads.tab,by ="Row.names") %>%
   merge(pruned_seq_sums,by ="Row.names")%>%
   merge(ps0_alpha,by ="Row.names")%>%
   mutate_if(is.numeric, round, 2) %>%
-  mutate(Seq.prop = round(tabled/input,2),
-         Euk.Seq.prop = round(Eukaryota/tabled,2),
-         Phyl_uncl.Seq.prop = round(Phyl_uncl/tabled,2),
-         Chloroplast.Seq.prop = round(Chloroplast/tabled,2),
-         Mitochondria.Seq.prop = round(Mitochondria/tabled,2)) %>%
+  mutate(Seq.prop = 100*round(Final/input,2),
+         Euk.Seq.prop = 100*round(Eukaryota/input,2),
+         Phyl_uncl.Seq.prop = 100*round(Phyl_uncl/input,2),
+         Chloroplast.Seq.prop = 100*round(Chloroplast/input,2),
+         Mitochondria.Seq.prop = 100*round(Mitochondria/input,2)) %>%
   select("sample_title","Primer_set","Type","Depth", #metadata
-         "input","merged", "tabled","Seq.prop", #dada2 
+         "input","merged", "tabled","Seq.prop", "Final",#dada2 
          "Euk.Seq.prop", "Phyl_uncl.Seq.prop","Chloroplast.Seq.prop","Mitochondria.Seq.prop", #taxa
          "Observed","Chao1","Shannon","InvSimpson")   #alpha div
 
@@ -135,6 +137,33 @@ assign(paste(i,"0", sep =""),phy_obj0)
 }
 
 write.table(summary_table, "./Tables/Micro_overview_table.txt" , sep = "\t", quote = F)
+
+
+
+#####################################
+# Plot communities richness
+#####################################
+Alpha_table<- summary_table %>% mutate(Type = factor(Type, 
+                                                        levels=c("Sea ice", "Surface water", "Deep water", "Sediment trap","Sediment"),
+                                                     labels = c("Sea ice", "Surface water", "Deep water", "Sediment trap","Sediment")))
+
+
+chao1_boxplot<- ggplot(Alpha_table, aes(x= Primer_set, y= Chao1, shape = Primer_set, group = Primer_set))+
+  geom_boxplot()+
+  geom_jitter(size = 3)+
+  facet_wrap(.~Type, scales = "free_y")+
+  theme_bw()+
+  theme(panel.grid.major = element_blank(),panel.grid.minor = element_blank(), 
+        axis.line = element_line(colour = "black"),
+        text=element_text(size=14),legend.position = "bottom", 
+        axis.title.x = element_blank())
+
+ggsave("./figures/chao1_box.pdf", 
+       plot = chao1_boxplot,
+       units = "cm",
+       width = 30, height = 30, 
+       #scale = 1,
+       dpi = 300)
 
 #####################################
 #Test patterns in Alpha diversity
@@ -149,7 +178,7 @@ Chao1_Wilcox<- summary_table  %>%
   add_significance()
 
 mean_chao1<- summary_table %>%
-              filter(Type %in% c("Deep water", "Sediment")) %>%
+  filter(Type %in% c("Deep water", "Sediment")) %>%
   group_by(Type, Primer_set)%>%
   summarise(Chao1_mean = mean(Chao1))
 
@@ -172,8 +201,6 @@ V4V5_ps_bac<- prune_taxa(taxa_sums(V4V5_ps_bac)>0,V4V5_ps_bac)
 V4V5_ps_Sed <- subset_samples(V4V5_ps, Type %in% c("Sediment"))
 V4V5_ps_Sed <- subset_taxa(V4V5_ps_Sed, Kingdom %in% c("Bacteria"))
 V4V5_ps_Sed<- prune_taxa(taxa_sums(V4V5_ps_Sed)>0,V4V5_ps_Sed)
-
-
 #####################################
 #Plot rarefaction
 #####################################
@@ -223,9 +250,6 @@ rare.p <- ggplot(iNEXT.rare.line, aes(x=x, y=y, shape = site))+
 
 
 ggsave("Figures/rarefactions.pdf", rare.p)
-
-
-
 
 #####################################
 # Plot community composition
@@ -294,20 +318,23 @@ for (p in c("V3V4","V4V5")){
   phy_obj.ra.long.agg$Type<- factor(phy_obj.ra.long.agg$Type,
                                                levels= c("Sea ice", "Surface water","Sediment trap", "Deep water", "Sediment"))
   
-  bar_plot[[p]] <-ggplot(phy_obj.ra.long.agg, aes(x = Primer_set, y = Abund.total, fill = Class))+
-    facet_grid(Type~Primer_set, space= "fixed")+
+  bar_plot[[p]] <-ggplot(phy_obj.ra.long.agg, aes(x = Overlap_ID, y = Abund.total, fill = Class))+
+    facet_wrap(Type~., scales = "free_x", ncol = 1)+
     geom_bar(stat = "identity", position="fill") +
     scale_y_continuous(breaks=NULL)+
     scale_fill_manual(values = phyla.col)+ 
-    coord_polar("y")
+    theme_bw()+
+    theme(panel.grid.major = element_blank(),panel.grid.minor = element_blank(), 
+          axis.line = element_line(colour = "black"),
+          text=element_text(size=14),legend.position = "none", 
+          axis.title.x = element_blank())
 }
 
 ggarrange(bar_plot$V3V4, bar_plot$V4V5, #heights = c(2,1.2),
-          ncol = 2, nrow = 1, align = "hv", legend = "left",
-          legend.grob = do.call(rbind, c(list(get_legend(bar_plot["V3V4"]),get_legend(bar_plot["V4V5"])), size="first")))
+          ncol = 2, nrow = 1, align = "hv", legend = "none")
 
 
-ggsave("./figures/pie_charts.pdf", 
+ggsave("./figures/bar_plots.pdf", 
        plot = last_plot(),
        units = "cm",
        width = 30, height = 30, 
@@ -467,6 +494,34 @@ prevdf_both_diff_Genus <-  prevdf_both %>%
 
 write.csv(prevdf_both_diff_Family, "Tables/Family_ASVs.csv")
 
+prevdf_both_diff_Family_plot<- prevdf_both_diff_Family %>% filter(Seq.prop_V3V4>1 | Seq.prop_V4V5>1)
+
+#order the x axis by classes
+prevdf_both_diff_Family_plot$Class <- factor(prevdf_both_diff_Family_plot$Class, ordered = TRUE,
+                                 levels= sort(unique(as.character(prevdf_both_diff_Family_plot$Class)),decreasing=FALSE))
+prevdf_both_diff_Family_plot$Family <- factor(prevdf_both_diff_Family_plot$Family, ordered = TRUE,
+                                  levels= unique(prevdf_both_diff_Family_plot$Family[order(prevdf_both_diff_Family_plot$Class)]))
+
+Family_ASVs_plot<- ggplot()+
+  geom_col(data =prevdf_both_diff_Family_plot, aes(x =Family, y = -Seq.prop_V3V4  , fill = Class))+
+  geom_text(data =prevdf_both_diff_Family_plot, aes(x =Family, y = -Seq.prop_V3V4  , label = ASVs.num_V3V4), size = 4, nudge_y = 0.5)+
+  geom_col(data =prevdf_both_diff_Family_plot, aes(x =Family, y = Seq.prop_V4V5  , fill = Class))+
+  geom_text(data =prevdf_both_diff_Family_plot, aes(x =Family, y = Seq.prop_V4V5  , label = ASVs.num_V4V5), size = 4, nudge_y = -0.5)+
+  scale_fill_manual(values = phyla.col)+ 
+  geom_hline(yintercept = 0, linetype = 2)+
+  coord_flip()+
+  theme_bw()+
+  theme(panel.grid.major = element_blank(),panel.grid.minor = element_blank(), 
+        axis.line = element_line(colour = "black"),
+        text=element_text(size=14),legend.position = "bottom")
+
+ggsave("Figures/Family_ASVS_dist.pdf", 
+       plot = Family_ASVs_plot,
+       units = "cm",
+       width = 30, height = 30, 
+       #scale = 1,
+       dpi = 300)
+
 #####################################
 # Merge datasets on a Genus level
 #####################################
@@ -542,9 +597,20 @@ V4V5_unique_glom_Genus <-ps0_glom_Genus_by_primer %>% filter (Genus %in% V4V5_un
 #statistical significance of the groups
 df <- as(sample_data(ps0_glom_merged.prop), "data.frame")
 d <- phyloseq::distance(ps0_glom_merged.prop, "jsd")
-adonis_all <- adonis2(d ~ Type+Primer_set , data= df, perm = 999)
+adonis_all <- adonis2(d ~ Type*Primer_set , data= df, perm = 999)
 adonis_all
 
+#check disperssion
+groups <- df[["Primer_set"]]
+mod <- betadisper(d, groups)
+permutest(mod)
+
+#dispersion is different between groups
+plot(mod)
+boxplot(mod)
+mod.HSD <- TukeyHSD(mod)
+mod.HSD
+plot(mod.HSD)
 
 # plot
 ps0.prop.jsd_slv <- ordinate(ps0_glom_merged.prop, method = "NMDS", 
